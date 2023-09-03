@@ -17,8 +17,21 @@ class FtApplicationBloc extends BlocBase {
   getAppSettings() async {
     AppThemeKey themeKey = SettingsManager().themeKey;
     AccentColor color = SettingsManager().color;
-    refreshAppSettingsController
-        .add(SettingsConfig(color: color, key: themeKey));
+    refreshAppSettingsController.add(SettingsConfig(
+        color: color, key: themeKey, displayMode: getNavigationDisplayMode()));
+  }
+
+  //获取导航栏Align
+  //TODO 判断页面宽度调整
+  PaneDisplayMode getNavigationDisplayMode() {
+    if (DevicesOS.isWeb) {
+      return PaneDisplayMode.top;
+    } else if (DevicesOS.isDesktop) {
+      return PaneDisplayMode.auto;
+    } else if (DevicesOS.isMobile) {
+      return PaneDisplayMode.minimal;
+    }
+    return PaneDisplayMode.auto;
   }
 
   //改变系统主题
@@ -26,7 +39,9 @@ class FtApplicationBloc extends BlocBase {
     SettingsManager().appTheme = themeKey;
     final oldData = refreshAppSettingsController.value;
     refreshAppSettingsController.add(SettingsConfig(
-        color: oldData?.color ?? SettingsManager().color, key: themeKey));
+        color: oldData?.color ?? SettingsManager().color,
+        key: themeKey,
+        displayMode: oldData?.displayMode ?? getNavigationDisplayMode()));
   }
 
   ThemeMode getCurrentTheme() {
