@@ -8,17 +8,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../model/constant/StorageConstant.dart';
+import 'devices_util.dart';
 
 _Dispatcher logHistory = _Dispatcher("");
-
-bool get isDesktop {
-  if (kIsWeb) return false;
-  return [
-    TargetPlatform.windows,
-    TargetPlatform.linux,
-    TargetPlatform.macOS,
-  ].contains(defaultTargetPlatform);
-}
 
 class _Dispatcher extends ValueNotifier<String> {
   _Dispatcher(String value) : super(value);
@@ -28,7 +20,7 @@ initLogger(VoidCallback runApp) async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     //add this line
-    if (isDesktop) {
+    if (DevicesOS.isDesktop) {
       await windowManager.ensureInitialized();
     }
     await _initStorage();

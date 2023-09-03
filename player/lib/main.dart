@@ -1,9 +1,14 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:player/app/application.dart';
+import 'package:player/app/application_bloc.dart';
 import 'package:player/route/navigator_provider.dart';
 import 'package:player/utils/all_utils.dart';
+import 'package:window_manager/window_manager.dart';
+
+import 'bloc/bloc_provider.dart';
+
+const String appTitle = '虫鸣音乐';
 
 Future<void> main() async {
   //init logger and third library
@@ -15,85 +20,182 @@ Future<void> main() async {
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 const String rememberId = 'ChorusPlayer';
 final router = GoRouter(navigatorKey: NavigatorProvider.navigatorKey, routes: [
-  GoRoute(path: '/', builder: (context, state) => MyHomePage()),
+  ShellRoute(
+    navigatorKey: _shellNavigatorKey,
+    restorationScopeId: rememberId,
+    builder: (context, state, child) {
+      return MyHomePage(
+        shellContext: _shellNavigatorKey.currentContext,
+        child: child,
+      );
+    },
+    //TODO: 首页
+    routes: [
+      /// Home
+      GoRoute(path: '/', builder: (context, state) => Container()),
+    ],
+  ),
 ]);
 
-//TODO: remove
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({
+    super.key,
+    required this.child,
+    required this.shellContext,
+  });
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+  final Widget child;
+  final BuildContext? shellContext;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  FtApplicationBloc? _appBloc;
+  final viewKey = GlobalKey(debugLabel: 'Navigation View Key');
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  int _calculateSelectedIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+    int indexOriginal = originalItems
+        .where((item) => item.key != null)
+        .toList()
+        .indexWhere((item) => item.key == Key(location));
+
+    if (indexOriginal == -1) {
+      int indexFooter = footerItems
+          .where((element) => element.key != null)
+          .toList()
+          .indexWhere((element) => element.key == Key(location));
+      if (indexFooter == -1) {
+        return 0;
+      }
+      return originalItems
+              .where((element) => element.key != null)
+              .toList()
+              .length +
+          indexFooter;
+    } else {
+      return indexOriginal;
+    }
+  }
+
+  //策划栏
+  late final List<NavigationPaneItem> originalItems = [
+    PaneItem(
+      key: const ValueKey('/'),
+      icon: const Icon(FluentIcons.home),
+      title: const Text('虫鸣音乐'),
+      body: const SizedBox.shrink(),
+    ),
+    PaneItemHeader(header: const Text('Empty')),
+  ].map((e) {
+    if (e is PaneItem) {
+      return PaneItem(
+        key: e.key,
+        icon: e.icon,
+        title: e.title,
+        body: e.body,
+        onTap: () {
+          final path = (e.key as ValueKey).value;
+          if (GoRouterState.of(context).uri.toString() != path) {
+            context.go(path);
+          }
+          e.onTap?.call();
+        },
+      );
+    }
+    return e;
+  }).toList();
+
+  //底部菜单栏
+  late final List<NavigationPaneItem> footerItems = [
+    PaneItemSeparator(),
+    PaneItem(
+      key: const ValueKey('/settings'),
+      icon: const Icon(FluentIcons.settings),
+      title: const Text('Settings'),
+      body: const SizedBox.shrink(),
+      onTap: () {
+        if (GoRouterState.of(context).uri.toString() != '/settings') {
+          context.go('/settings');
+        }
+      },
+    ),
+  ];
+
+  @override
+  void initState() {
+    _appBloc = BlocProvider.of<FtApplicationBloc>(context);
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return ScaffoldPage(
-      header: PageHeader(
-        title: const Text('Flutter Demo Home Page'),
+    return NavigationView(
+      key: viewKey,
+      appBar: NavigationAppBar(
+        automaticallyImplyLeading: false,
+        height: DevicesOS.isWeb ? 0 : 50,
+        leading: () {
+          return const SizedBox.shrink();
+        }(),
+        title: () {
+          if (DevicesOS.isWeb) {
+            return const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(appTitle),
+            );
+          }
+          return const DragToMoveArea(
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(appTitle),
+            ),
+          );
+        }(),
+        actions: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          if (DevicesOS.isDesktop) const WindowButtons(),
+        ]),
       ),
-      content: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-            ),
-          ],
+      paneBodyBuilder: (item, child) {
+        final name =
+            item?.key is ValueKey ? (item!.key as ValueKey).value : null;
+        return FocusTraversalGroup(
+          key: ValueKey('body$name'),
+          child: widget.child,
+        );
+      },
+      pane: NavigationPane(
+        selected: _calculateSelectedIndex(context),
+        header: SizedBox(
+          height: kOneLineTileHeight,
+          child: SizedBox.shrink(),
         ),
+        displayMode:
+            _appBloc?.getNavigationDisplayMode() ?? PaneDisplayMode.auto,
+        items: originalItems,
+        autoSuggestBoxReplacement: const Icon(FluentIcons.search),
+        footerItems: footerItems,
       ),
-      bottomBar: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+class WindowButtons extends StatelessWidget {
+  const WindowButtons({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final FluentThemeData theme = FluentTheme.of(context);
+
+    return SizedBox(
+      width: 138,
+      height: 50,
+      child: WindowCaption(
+        brightness: theme.brightness,
+        backgroundColor: Colors.transparent,
+      ),
     );
   }
 }

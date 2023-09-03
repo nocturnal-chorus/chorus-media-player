@@ -5,9 +5,11 @@ enum AppThemeKey { light, dark, system, custom }
 class SettingsConfig {
   final AppThemeKey key;
   final AccentColor color;
+  final PaneDisplayMode displayMode;
 
   //TODO: 添加其他设置属性
-  SettingsConfig({required this.color, required this.key});
+  SettingsConfig(
+      {required this.color, required this.key, required this.displayMode});
 }
 
 AppThemeKey getThemeEnumFromString(String data) {

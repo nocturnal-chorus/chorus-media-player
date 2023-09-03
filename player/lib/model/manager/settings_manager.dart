@@ -1,5 +1,4 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/foundation.dart';
 import 'package:player/model/constant/StorageConstant.dart';
 import 'package:player/utils/all_utils.dart';
 import 'package:hive/hive.dart';
@@ -20,15 +19,17 @@ class SettingsManager {
 
   set appTheme(dynamic data) {
     _themeKey = data as AppThemeKey?;
-    if (isDesktop) {
+    if (DevicesOS.isDesktop) {
       box.put(StorageConstant.THEME_KEY, data.toString());
     }
   }
 
   AppThemeKey get themeKey {
     _themeKey ??= getThemeEnumFromString(
-        (isDesktop ? box.get(StorageConstant.THEME_KEY) : AppThemeKey.system) ??
-            AppThemeKey.system.name);
+        (DevicesOS.isDesktop
+            ? box.get(StorageConstant.THEME_KEY)
+            : AppThemeKey.system) ??
+        AppThemeKey.system.name);
     return _themeKey ?? AppThemeKey.system;
   }
 
@@ -44,9 +45,7 @@ class SettingsManager {
   }
 
   static AccentColor get systemAccentColor {
-    if ((defaultTargetPlatform == TargetPlatform.windows ||
-            defaultTargetPlatform == TargetPlatform.android) &&
-        !kIsWeb) {
+    if ((DevicesOS.isWindows || DevicesOS.isAndroid) && !DevicesOS.isWeb) {
       return AccentColor.swatch({
         'darkest': SystemTheme.accentColor.darkest,
         'darker': SystemTheme.accentColor.darker,
