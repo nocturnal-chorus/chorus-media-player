@@ -30,7 +30,7 @@ pipeline {
   stages {
     stage('pull code') {
       environment {
-        url = 'https://github.com/nocturnal-chorus/chorus-media-player'
+        url = 'https://github.com/nocturnal-chorus/chorus-media-player.git'
       }
       steps {
         retry(3) {
