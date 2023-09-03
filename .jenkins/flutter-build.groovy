@@ -12,6 +12,7 @@ pipeline {
       ],
       printContributedVariables: false,
       printPostContent: false,
+      tokenCredentialId: 'webhook-trigger-token',
       regexpFilterText: '$name',
       regexpFilterExpression: '^chorus',
       causeString: ' Triggered on $ref' ,
