@@ -1,41 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:player/app/application.dart';
+import 'package:player/route/navigator_provider.dart';
+import 'package:player/utils/all_utils.dart';
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  //init logger and third library
+  await initLogger(() async {
+    runApp(const FtApplication());
+  });
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+final _shellNavigatorKey = GlobalKey<NavigatorState>();
+const String rememberId = 'ChorusPlayer';
+final router = GoRouter(navigatorKey: NavigatorProvider.navigatorKey, routes: [
+  GoRoute(
+      path: '/',
+      builder: (context, state) => MyHomePage(title: 'Flutter Demo Home Page')),
+]);
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
+//TODO: remove
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
