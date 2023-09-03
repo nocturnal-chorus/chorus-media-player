@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   fluent_ui: ^4.7.3 #ui
   go_router: ^10.0.0 #路由管理
+  window_manager: ^0.3.6 #窗体控制
   retrofit: '>=4.0.0 <5.0.0'
   dio: ^5.3.2
 
