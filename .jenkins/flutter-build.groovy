@@ -2,20 +2,15 @@ pipeline {
   triggers {
     GenericTrigger(
       genericVariables: [
-        [
-          key: 'name',
-          value: '$.repository.name',
-          expressionType: 'JSONPath',
-          regularFilter: '',
-          defaultValue: ''
-        ]
+        [ key: 'name', value: '$.repository.name', expressionType: 'JSONPath' ],
+        [ key: 'branch', value: '$.ref', expressionType: 'JSONPath' ],
       ],
       printContributedVariables: false,
       printPostContent: false,
       tokenCredentialId: 'webhook-trigger-token',
-      regexpFilterText: '$name',
-      regexpFilterExpression: '^chorus',
-      causeString: ' Triggered on $ref' ,
+      regexpFilterText: '$name@$branch',
+      regexpFilterExpression: 'chorus-media-player@refs/heads/develop',
+      causeString: ' Triggered on $branch' ,
     )
   }
 
