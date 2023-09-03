@@ -20,12 +20,15 @@ class SettingsManager {
 
   set appTheme(dynamic data) {
     _themeKey = data as AppThemeKey?;
-    box.put(StorageConstant.THEME_KEY, data.toString());
+    if (isDesktop) {
+      box.put(StorageConstant.THEME_KEY, data.toString());
+    }
   }
 
   AppThemeKey get themeKey {
     _themeKey ??= getThemeEnumFromString(
-        box.get(StorageConstant.THEME_KEY) ?? AppThemeKey.system.name);
+        (isDesktop ? box.get(StorageConstant.THEME_KEY) : AppThemeKey.system) ??
+            AppThemeKey.system.name);
     return _themeKey ?? AppThemeKey.system;
   }
 
