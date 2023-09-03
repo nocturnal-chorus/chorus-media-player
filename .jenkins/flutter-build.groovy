@@ -1,5 +1,4 @@
 pipeline {
-  // pipeline 的触发方式
   triggers {
     GenericTrigger(
       genericVariables: [
@@ -19,18 +18,16 @@ pipeline {
     )
   }
 
-  // 代理
   agent {
     docker {
       image 'registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/chorus-media-player-build:latest'
       args '-v /etc/timezone:/etc/timezone:ro -v /etc/localtime:/etc/localtime:ro'
     }
   }
-  // 阶段
   stages {
     stage('pull code') {
       environment {
-        url = 'https://github.com/nocturnal-chorus/chorus-media-player.git'
+        url = 'https://ghproxy.com/https://github.com/nocturnal-chorus/chorus-media-player.git'
       }
       steps {
         retry(3) {
@@ -38,22 +35,17 @@ pipeline {
         }
       }
     }
-    stage('install and build') {
+    stage('build') {
       steps {
-        retry(2) {
-          sh 'cd player && flutter build web --release'
-        }
+        sh 'cd player && flutter clean && flutter build web --no-tree-shake-icons --release'
       }
     }
     stage('compress') {
       steps {
-        // 压缩构建后的文件用于发布到服务器的 nginx 中
-        retry(2) {
-          sh '''
-          cd /var/jenkins_home/workspace/chorus-media-player/player/build/web
-          tar -zcf chorus-media-player.tar.gz *
-          '''
-        }
+        sh '''
+        cd /var/jenkins_home/workspace/chrous-media-player-build/player/build/web/
+        tar -zcf chorus-media-player.tar.gz *
+        '''
       }
     }
     stage('ssh') {
@@ -63,20 +55,20 @@ pipeline {
           def remote = [:]
           remote.name = 'root'
           remote.logLevel = 'WARNING'
-          remote.host = 'www.nocturnal-chorus.com'
+          remote.host = 'player.nocturnal-chorus.com'
           remote.allowAnyHosts = true
           withCredentials([usernamePassword(credentialsId: 'vps-admin', passwordVariable: 'password', usernameVariable: 'username')]) {
             remote.user = "${username}"
             remote.password = "${password}"
           }
           sshCommand remote: remote, command: '''#!/bin/bash
-            cd /www/wwwroot/www.nocturnal-chorus.com/
+            cd /www/wwwroot/player.nocturnal-chorus.com/
             shopt -s extglob
             rm -rf !(.htaccess|.user.ini|.well-known|favicon.ico|chorus-media-player.tar.gz)
             '''
-          sshPut remote: remote, from: '/var/jenkins_home/workspace/chorus-media-player/player/build/web/chorus-media-player.tar.gz', into: '/www/wwwroot/www.nocturnal-chorus.com/'
-          sshCommand remote: remote, command: "cd /www/wwwroot/www.nocturnal-chorus.com/ && tar -xf chorus-media-player.tar.gz"
-          sshRemove remote: remote, path: '/www/wwwroot/www.nocturnal-chorus.com/chorus-media-player.tar.gz'
+          sshPut remote: remote, from: '/var/jenkins_home/workspace/chrous-media-player-build/player/build/web/chorus-media-player.tar.gz', into: '/www/wwwroot/player.nocturnal-chorus.com/'
+          sshCommand remote: remote, command: "cd /www/wwwroot/player.nocturnal-chorus.com/ && tar -xf chorus-media-player.tar.gz"
+          sshRemove remote: remote, path: '/www/wwwroot/player.nocturnal-chorus.com/chorus-media-player.tar.gz'
         }
       }
     }
