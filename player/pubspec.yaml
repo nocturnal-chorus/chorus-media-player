@@ -48,6 +48,7 @@ dependencies:
   just_audio: ^0.9.34 # union windows
   audio_service: ^0.18.11 # backup
   just_audio_windows: ^0.2.0
+  audio_video_progress_bar: ^2.0.0 #demo progress,will remove
 
 dev_dependencies:
   flutter_test:
