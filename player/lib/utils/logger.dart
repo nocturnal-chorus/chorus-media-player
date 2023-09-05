@@ -38,7 +38,7 @@ _initStorage() async {
   String? appLocalPath;
   Uint8List key =
       Uint8List.fromList(utf8.encode("12345678901234567890123456789012"));
-  if (!kIsWeb) {
+  if (!DevicesOS.isWeb) {
     Directory appDir = await getApplicationSupportDirectory();
     appLocalPath = appDir.path;
     Hive.init(appLocalPath);

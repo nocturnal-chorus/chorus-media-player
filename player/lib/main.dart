@@ -1,8 +1,10 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:player/app/application.dart';
 import 'package:player/app/application_bloc.dart';
 import 'package:player/route/navigator_provider.dart';
+import 'package:player/ui/demo/demo_page.dart';
 import 'package:player/utils/all_utils.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -32,7 +34,7 @@ final router = GoRouter(navigatorKey: NavigatorProvider.navigatorKey, routes: [
     //TODO: 首页
     routes: [
       /// Home
-      GoRoute(path: '/', builder: (context, state) => Container()),
+      GoRoute(path: '/', builder: (context, state) => const FtDemoPage()),
     ],
   ),
 ]);
