@@ -40,7 +40,7 @@ class _FtApplicationState extends State<FtApplication> with WindowListener {
       color: settings?.color,
       theme: FluentThemeData(
         accentColor: settings?.color,
-        scaffoldBackgroundColor: settings?.color.normal,
+        //scaffoldBackgroundColor: settings?.color.normal,
         visualDensity: VisualDensity.standard,
         focusTheme: FocusThemeData(
           glowFactor: is10footScreen(context) ? 2.0 : 0.0,
