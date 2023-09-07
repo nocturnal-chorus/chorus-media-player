@@ -53,6 +53,7 @@ _initWindows() async {
   });
 }
 
+//TODO: mac,ios icon调整
 _initStorage() async {
   String? appLocalPath;
   Uint8List key =
