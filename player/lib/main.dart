@@ -1,6 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:player/app/application.dart';
 import 'package:player/app/application_bloc.dart';
 import 'package:player/route/navigator_provider.dart';
@@ -9,8 +8,6 @@ import 'package:player/utils/all_utils.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'bloc/bloc_provider.dart';
-
-const String appTitle = '虫鸣音乐';
 
 Future<void> main() async {
   //init logger and third library
@@ -60,17 +57,19 @@ class _MyHomePageState extends State<MyHomePage> {
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     int indexOriginal = originalItems
-        .where((item) => item.key != null)
-        .toList()
-        .indexWhere((item) => item.key == Key(location));
+            .where((item) => item.key != null)
+            .toList()
+            .indexWhere((item) => item.key == Key(location)) +
+        1;
 
-    if (indexOriginal == -1) {
+    //TODO: index error
+    if (indexOriginal == 0) {
       int indexFooter = footerItems
           .where((element) => element.key != null)
           .toList()
           .indexWhere((element) => element.key == Key(location));
-      if (indexFooter == -1) {
-        return 0;
+      if (indexFooter == 0) {
+        return 1;
       }
       return originalItems
               .where((element) => element.key != null)
@@ -82,15 +81,61 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  //策划栏
+  NavigationPaneItem _header() {
+    if (DevicesOS.isDesktop) {
+      return PaneItemHeader(
+          header: Row(
+        children: [
+          Icon(FluentIcons.app_icon_default),
+          SizedBox.shrink(),
+          Text(appTitle)
+        ],
+      ));
+    }
+    if (DevicesOS.isWeb) {
+      return PaneItemAction(
+        icon: Icon(FluentIcons.app_icon_default),
+        onTap: () {},
+        title: Text(appTitle),
+        autofocus: false,
+      );
+    }
+    if (DevicesOS.isMobile) {
+      //TODO: 用户头像信息展示
+      return PaneItemHeader(
+          header: Row(
+        children: [
+          Icon(FluentIcons.app_icon_default),
+          SizedBox.shrink(),
+          Text(appTitle)
+        ],
+      ));
+    }
+    return PaneItemHeader(
+        header: Row(
+      children: [
+        Icon(FluentIcons.app_icon_default),
+        SizedBox.shrink(),
+        Text(appTitle)
+      ],
+    ));
+  }
+
+  //侧滑栏
   late final List<NavigationPaneItem> originalItems = [
+    _header(),
     PaneItem(
       key: const ValueKey('/'),
-      icon: const Icon(FluentIcons.home),
-      title: const Text('虫鸣音乐'),
+      icon: const Icon(FluentIcons.search_and_apps),
+      title: const Text('发现音乐'),
       body: const SizedBox.shrink(),
     ),
-    PaneItemHeader(header: const Text('Empty')),
+    PaneItem(
+      key: const ValueKey('/empty'),
+      icon: const SizedBox.shrink(),
+      title: const Text('Empty'),
+      body: const SizedBox.shrink(),
+    ),
   ].map((e) {
     if (e is PaneItem) {
       return PaneItem(

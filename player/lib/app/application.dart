@@ -33,7 +33,7 @@ class _FtApplicationState extends State<FtApplication> with WindowListener {
   Widget _appWidget(SettingsConfig? settings) {
     //TODO: 多语言支持
     return FluentApp.router(
-      title: "虫鸣音乐",
+      title: appTitle,
       //locale: _locale,
       debugShowCheckedModeBanner: false,
       themeMode: getThemeMode(settings?.key),
