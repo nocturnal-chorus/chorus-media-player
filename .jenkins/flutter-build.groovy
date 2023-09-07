@@ -23,7 +23,7 @@ pipeline {
   stages {
     stage('pull code') {
       environment {
-        url = 'https://gitee.com/alomerry/chorus-media-player.git'
+        url = 'https://gitee.com/nocturnal-chorus/chorus-media-player.git'
       }
       steps {
         retry(3) {
