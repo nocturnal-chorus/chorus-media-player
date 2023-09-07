@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitepress'
 
+// https://vanchkong.github.io/VitePressCN/
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Chorus Media Player",
@@ -15,8 +16,9 @@ export default defineConfig({
       {
         text: 'Examples',
         items: [
+          { text: 'Schema', link: '/schema' },
           { text: 'Markdown Examples', link: '/markdown-examples' },
-          { text: 'Runtime API Examples', link: '/api-examples' }
+          { text: 'Runtime API Examples', link: '/api-examples' },
         ]
       }
     ],
