@@ -4,7 +4,7 @@ pipeline {
       genericVariables: [
         [ key: 'name', value: '$.repository.name', expressionType: 'JSONPath' ],
         [ key: 'branch', value: '$.ref', expressionType: 'JSONPath' ],
-        [ key: 'changed_files', value: '$.commits[*].['modified','added','removed'][*]', expressionType: 'JSONPath' ],
+        [ key: 'changed_files', value: "$.commits[*].['modified','added','removed'][*]", expressionType: 'JSONPath' ],
       ],
       printContributedVariables: false,
       printPostContent: false,
