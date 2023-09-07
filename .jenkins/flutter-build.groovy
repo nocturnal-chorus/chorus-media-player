@@ -4,13 +4,13 @@ pipeline {
       genericVariables: [
         [ key: 'name', value: '$.repository.name', expressionType: 'JSONPath' ],
         [ key: 'branch', value: '$.ref', expressionType: 'JSONPath' ],
-        [ key: 'changed_files', value: "$.commits[*].['modified','added','removed'][*]", expressionType: 'JSONPath' ],
+        [ key: 'changed_files', value: '$.commits[*].["modified","added","removed"][*]', expressionType: 'JSONPath' ],
       ],
       printContributedVariables: false,
       printPostContent: false,
       tokenCredentialId: 'webhook-trigger-token',
       regexpFilterText: '$name@$branch@$changed_files',
-      regexpFilterExpression: 'chorus-media-player@refs/heads/develop@player/.*',
+      regexpFilterExpression: 'chorus-media-player@refs/heads/develop@.*\\"player/.*',
       causeString: ' Triggered on $branch' ,
     )
   }
