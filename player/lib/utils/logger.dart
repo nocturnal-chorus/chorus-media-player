@@ -12,6 +12,8 @@ import 'devices_util.dart';
 
 _Dispatcher logHistory = _Dispatcher("");
 
+const String appTitle = '虫鸣音乐';
+
 class _Dispatcher extends ValueNotifier<String> {
   _Dispatcher(String value) : super(value);
 }
@@ -22,6 +24,7 @@ initLogger(VoidCallback runApp) async {
     //add this line
     if (DevicesOS.isDesktop) {
       await windowManager.ensureInitialized();
+      _initWindows();
     }
     await _initStorage();
     FlutterError.onError = (FlutterErrorDetails details) {
@@ -31,6 +34,22 @@ initLogger(VoidCallback runApp) async {
     runApp.call();
   }, (Object error, StackTrace stack) {
     logError(stack.toString());
+  });
+}
+
+_initWindows() async {
+  WindowOptions windowOptions = WindowOptions(
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    title: appTitle,
+    titleBarStyle: TitleBarStyle.hidden,
+    windowButtonVisibility: false,
+  );
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.setMinimumSize(const Size(600, 500));
+    await windowManager.show();
+    await windowManager.setPreventClose(true);
   });
 }
 
