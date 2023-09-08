@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package player.music;
+
+option go_package = ".;music";
+
+message ListMusicRequest {
+
+}
+
+message ListMusicResponse {
+  repeated MusicItem items = 1;
+  uint32 total = 2;
+}
+
+message MusicItem {
+  string id = 1;
+  string name = 2;
+  SingerItem singer = 3;
+}
+
+message SingerItem {
+  string id = 1;
+  string name = 2;
+}
