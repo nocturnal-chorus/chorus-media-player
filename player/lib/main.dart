@@ -4,6 +4,7 @@ import 'package:player/app/application.dart';
 import 'package:player/app/application_bloc.dart';
 import 'package:player/route/navigator_provider.dart';
 import 'package:player/ui/demo/demo_page.dart';
+import 'package:player/ui/settings/settings_page.dart';
 import 'package:player/utils/all_utils.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -32,6 +33,9 @@ final router = GoRouter(navigatorKey: NavigatorProvider.navigatorKey, routes: [
     routes: [
       /// Home
       GoRoute(path: '/', builder: (context, state) => const FtDemoPage()),
+      GoRoute(
+          path: '/settings',
+          builder: (context, state) => const FtSettingsPage()),
     ],
   ),
 ]);
@@ -65,9 +69,10 @@ class _MyHomePageState extends State<MyHomePage> {
     //TODO: index error
     if (indexOriginal == 0) {
       int indexFooter = footerItems
-          .where((element) => element.key != null)
-          .toList()
-          .indexWhere((element) => element.key == Key(location));
+              .where((element) => element.key != null)
+              .toList()
+              .indexWhere((element) => element.key == Key(location)) +
+          1;
       if (indexFooter == 0) {
         return 1;
       }
@@ -130,12 +135,6 @@ class _MyHomePageState extends State<MyHomePage> {
       title: const Text('发现音乐'),
       body: const SizedBox.shrink(),
     ),
-    PaneItem(
-      key: const ValueKey('/empty'),
-      icon: const SizedBox.shrink(),
-      title: const Text('Empty'),
-      body: const SizedBox.shrink(),
-    ),
   ].map((e) {
     if (e is PaneItem) {
       return PaneItem(
@@ -179,51 +178,62 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return NavigationView(
-      key: viewKey,
-      appBar: NavigationAppBar(
-        automaticallyImplyLeading: false,
-        height: DevicesOS.isWeb ? 0 : 50,
-        leading: () {
-          return const SizedBox.shrink();
-        }(),
-        title: () {
-          if (DevicesOS.isWeb) {
-            return const Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(appTitle),
+    final theme = FluentTheme.of(context);
+    final size = MediaQuery.of(context).size;
+    return ScaffoldPage(
+      padding: EdgeInsets.only(top: 0.0),
+      content: NavigationView(
+        key: viewKey,
+        appBar: NavigationAppBar(
+          automaticallyImplyLeading: false,
+          height: DevicesOS.isWeb ? 0 : 50,
+          leading: () {
+            return const SizedBox.shrink();
+          }(),
+          title: () {
+            if (DevicesOS.isWeb) {
+              return const Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(appTitle),
+              );
+            }
+            return const DragToMoveArea(
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(appTitle),
+              ),
             );
-          }
-          return const DragToMoveArea(
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: Text(appTitle),
-            ),
-          );
-        }(),
-        actions: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          if (DevicesOS.isDesktop) const WindowButtons(),
-        ]),
-      ),
-      paneBodyBuilder: (item, child) {
-        final name =
-            item?.key is ValueKey ? (item!.key as ValueKey).value : null;
-        return FocusTraversalGroup(
-          key: ValueKey('body$name'),
-          child: widget.child,
-        );
-      },
-      pane: NavigationPane(
-        selected: _calculateSelectedIndex(context),
-        header: SizedBox(
-          height: kOneLineTileHeight,
-          child: SizedBox.shrink(),
+          }(),
+          actions: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            if (DevicesOS.isDesktop) const WindowButtons(),
+          ]),
         ),
-        displayMode:
-            _appBloc?.getNavigationDisplayMode() ?? PaneDisplayMode.auto,
-        items: originalItems,
-        autoSuggestBoxReplacement: const Icon(FluentIcons.search),
-        footerItems: footerItems,
+        paneBodyBuilder: (item, child) {
+          final name =
+              item?.key is ValueKey ? (item!.key as ValueKey).value : null;
+          return FocusTraversalGroup(
+            key: ValueKey('body$name'),
+            child: widget.child,
+          );
+        },
+        pane: NavigationPane(
+          selected: _calculateSelectedIndex(context),
+          header: SizedBox(
+            height: kOneLineTileHeight,
+            child: SizedBox.shrink(),
+          ),
+          displayMode:
+              _appBloc?.getNavigationDisplayMode() ?? PaneDisplayMode.auto,
+          items: originalItems,
+          autoSuggestBoxReplacement: const Icon(FluentIcons.search),
+          footerItems: footerItems,
+        ),
+      ),
+      //TODO: 移动端隐藏
+      bottomBar: Container(
+        color: theme.scaffoldBackgroundColor,
+        width: size.width,
+        height: 40,
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:player/bloc/bloc_provider.dart';
-
+import 'package:player/repo/repo_client.dart';
 import '../model/manager/settings_manager.dart';
 import '../utils/all_utils.dart';
 
@@ -11,6 +11,8 @@ class FtApplicationBloc extends BlocBase {
       BlocStreamController<SettingsConfig?>(isBroadcast: false);
 
   initial() {
+    //init repo
+    DataClient().init();
     getAppSettings();
   }
 
