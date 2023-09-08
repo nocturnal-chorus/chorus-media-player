@@ -1,0 +1,8 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    - selector: player.music.MusicService.ListMusic
+      body: "*"
+      post: "/v0/music"

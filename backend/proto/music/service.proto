@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package player.music;
+
+option go_package = ".;music";
+
+import "music.proto";
+
+service MusicService {
+  rpc ListMusic(ListMusicRequest) returns (ListMusicResponse);
+}
