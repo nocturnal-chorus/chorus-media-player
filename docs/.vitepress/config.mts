@@ -16,6 +16,7 @@ export default defineConfig({
       {
         text: 'Examples',
         items: [
+          { text: 'Deploy', link: '/how-to-deploy' },
           { text: 'Schema', link: '/schema' },
           { text: 'Markdown Examples', link: '/markdown-examples' },
           { text: 'Runtime API Examples', link: '/api-examples' },
