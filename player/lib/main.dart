@@ -2,7 +2,9 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:player/app/application.dart';
 import 'package:player/app/application_bloc.dart';
+import 'package:player/main_bloc.dart';
 import 'package:player/route/navigator_provider.dart';
+import 'package:player/ui/bottom_player_page.dart';
 import 'package:player/ui/demo/demo_page.dart';
 import 'package:player/ui/settings/settings_page.dart';
 import 'package:player/utils/all_utils.dart';
@@ -56,6 +58,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   FtApplicationBloc? _appBloc;
+  final _mainBloc = FtMainBloc();
   final viewKey = GlobalKey(debugLabel: 'Navigation View Key');
 
   int _calculateSelectedIndex(BuildContext context) {
@@ -88,6 +91,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   NavigationPaneItem _header() {
     if (DevicesOS.isDesktop) {
+      return PaneItemAction(
+        icon: Icon(FluentIcons.app_icon_default),
+        onTap: () {},
+        title: Text(appTitle),
+        autofocus: false,
+      );
       return PaneItemHeader(
           header: Row(
         children: [
@@ -173,7 +182,14 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     _appBloc = BlocProvider.of<FtApplicationBloc>(context);
+    _mainBloc.initial();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _mainBloc.dispose();
+    super.dispose();
   }
 
   @override
@@ -231,9 +247,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       //TODO: 移动端隐藏
       bottomBar: Container(
-        color: theme.scaffoldBackgroundColor,
+        color: theme.activeColor,
         width: size.width,
-        height: 40,
+        child: FtBottomPlayerPage(),
       ),
     );
   }

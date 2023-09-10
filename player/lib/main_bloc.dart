@@ -2,10 +2,10 @@ import 'dart:isolate';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:player/bloc/base_bloc.dart';
+import 'package:player/ui/bottom_player_page.dart';
 import '../../bloc/bloc_provider.dart';
-import '../bottom_player_page.dart';
 
-class FtDemoBloc extends FtBaseBloc {
+class FtMainBloc extends FtBaseBloc {
   final progressStreamCtrl = BlocStreamController<ProgressBarState>();
   final playerStateStreamCtrl = BlocStreamController<ButtonState>();
   final currentSongTitleStreamCtrl = BlocStreamController<String>();
@@ -62,7 +62,8 @@ class FtDemoBloc extends FtBaseBloc {
     });
   }
 
-  void _listenForChangesInBufferedPosition(ProgressBarState initProgressStatus) {
+  void _listenForChangesInBufferedPosition(
+      ProgressBarState initProgressStatus) {
     _audioPlayer?.bufferedPositionStream.listen((bufferedPosition) {
       final oldState = progressStreamCtrl.value ?? initProgressStatus;
       progressStreamCtrl.add(ProgressBarState(
@@ -126,7 +127,7 @@ class FtDemoBloc extends FtBaseBloc {
 
   void prePlayList() async {
     final song0 =
-    Uri.parse("http://music.163.com/song/media/outer/url?id=5238992.mp3");
+        Uri.parse("http://music.163.com/song/media/outer/url?id=5238992.mp3");
     final song1 = Uri.parse(
         'https://cdn.alomerry.com/media/music/J.J.%20Abrams-Fringe%2085-%E3%80%8A%E5%8D%B1%E6%9C%BA%E8%BE%B9%E7%BC%98%20%E7%AC%AC%E4%BA%8C%E5%AD%A3%E3%80%8B%E7%94%B5%E8%A7%86%E5%89%A7%E6%8F%92%E6%9B%B2.mp3');
     final song2 = Uri.parse(

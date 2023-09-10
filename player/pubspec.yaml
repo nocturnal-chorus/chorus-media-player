@@ -45,7 +45,7 @@ dependencies:
   dio: ^5.3.2
   system_theme: ^2.3.1 #系统色
   universal_platform: ^1.0.0+1 #平台信息
-  just_audio: ^0.9.34 # union windows
+  just_audio: ^0.9.11 # union windows
   audio_service: ^0.18.11 # backup
   just_audio_windows: ^0.2.0
   audio_video_progress_bar: ^2.0.0 #demo progress,will remove
