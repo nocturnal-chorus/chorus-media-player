@@ -1,0 +1,50 @@
+DIRPAHT=$(cd `dirname ${0}`; pwd)
+source "${DIRPAHT}/core/config.sh"
+
+GOLANG_IMAGE="registry.cn-hangzhou.aliyuncs.com/alomerry/base-golang:1.21"
+
+build_service() {
+  echo "Start build service [$1] ..."
+  echo "Built $1 bin success!"
+}
+
+iterate_service() {
+  service_name=$2[@]
+  # Set default repos
+  target_service=("${!service_name}")
+  # If specified repos are provided
+  if [ $# -gt 2 ] && [ "all" != "${@:3}" ]; then
+    service=${@:3}
+  else
+    service=${target_service[@]}
+  fi
+
+  for item in ${service[@]}
+  do
+    $1 "${item}"
+  done
+}
+
+iterate_services() {
+  iterate_service "$1" SERVICE_LIST ${@:2}
+}
+
+main() {
+  case $1 in
+    bin)
+      iterate_services 'build_service' ${@:2}
+      ;;
+    *)
+    help
+      ;;
+  esac
+}
+
+help() {
+  echo "$0 option"
+  echo -e "\nOptions:"
+  echo "    bin: Build bin"
+  exit 1
+}
+
+main "$@"

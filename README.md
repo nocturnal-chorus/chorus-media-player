@@ -1,6 +1,6 @@
 # Chrous Media Player
 
-[![Build Status](https://ci.alomerry.com/buildStatus/icon?job=chorus-media-player-build)](https://ci.alomerry.com/job/chrous-media-player-build/)
+[![Build Status](https://ci.alomerry.com/buildStatus/icon?job=chorus-media-player-build)](https://ci.alomerry.com/job/chorus-media-player-build/)
 [![flutter](https://img.shields.io/badge/flutter-3.13.2-blue)](https://flutter.dev/)
 [![License](https://img.shields.io/static/v1?label=License&message=MIT&color=red)](./LICENSE)
 
