@@ -30,3 +30,15 @@ ThemeMode getThemeMode(AppThemeKey? themeKey) {
       return ThemeMode.system;
   }
 }
+
+AppThemeKey getThemeKeyByMode(ThemeMode mode) {
+  switch (mode) {
+    case ThemeMode.light:
+      return AppThemeKey.light;
+    case ThemeMode.dark:
+      return AppThemeKey.dark;
+    case ThemeMode.system:
+    default:
+      return AppThemeKey.system;
+  }
+}
