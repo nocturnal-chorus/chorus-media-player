@@ -13,23 +13,18 @@ class SettingsManager {
 
   SettingsManager._internal();
 
-  //final box = Hive.box(StorageConstant.SETTINGS_DATA);
+  final box = Hive.box(StorageConstant.SETTINGS_DATA);
 
   AppThemeKey? _themeKey;
 
   set appTheme(dynamic data) {
     _themeKey = data as AppThemeKey?;
-    if (DevicesOS.isDesktop) {
-      //box.put(StorageConstant.THEME_KEY, data.toString());
-    }
+    box.put(StorageConstant.THEME_KEY, data.toString());
   }
 
   AppThemeKey get themeKey {
-    /*_themeKey ??= getThemeEnumFromString(
-        (DevicesOS.isDesktop
-            ? box.get(StorageConstant.THEME_KEY)
-            : AppThemeKey.system) ??
-        AppThemeKey.system.name);*/
+    _themeKey ??= getThemeEnumFromString(
+        box.get(StorageConstant.THEME_KEY) ?? AppThemeKey.system.name);
     return _themeKey ?? AppThemeKey.system;
   }
 
