@@ -62,10 +62,10 @@ _initStorage() async {
     Directory appDir = await getApplicationSupportDirectory();
     appLocalPath = appDir.path;
     Hive.init(appLocalPath);
-    // The encryption key has to be a 32 byte (256 bit) array.
-    await Hive.openBox(StorageConstant.SETTINGS_DATA,
-        encryptionCipher: HiveAesCipher(key));
   }
+  // The encryption key has to be a 32 byte (256 bit) array.
+  await Hive.openBox(StorageConstant.SETTINGS_DATA,
+      encryptionCipher: HiveAesCipher(key));
 }
 
 void log(String? value) {
