@@ -5,6 +5,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:player/utils/cache/cached_image.dart';
+import 'package:player/utils/path_util.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../model/constant/StorageConstant.dart';
@@ -22,6 +24,8 @@ initLogger(VoidCallback runApp) async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     //add this line
+    await initAppDir();
+    registerImageCacheProvider();
     if (DevicesOS.isDesktop) {
       await windowManager.ensureInitialized();
       _initWindows();

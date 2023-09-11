@@ -5,8 +5,6 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart'
     as progress;
 import 'package:player/widget/page.dart';
 
-enum ButtonState { paused, playing, loading }
-
 class FtDemoPage extends StatefulWidget {
   const FtDemoPage({super.key});
 
@@ -26,13 +24,15 @@ class _DemoPageState extends State<FtDemoPage> with PageMixin {
 
   @override
   void dispose() {
+    _demoBloc.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasFluentTheme(context));
-    return ScaffoldPage.withPadding(
+    return ScaffoldPage();
+    /*return ScaffoldPage.withPadding(
       header: PageHeader(
         title: const Text('Demo music playing'),
       ),
@@ -138,6 +138,6 @@ class _DemoPageState extends State<FtDemoPage> with PageMixin {
           ],
         ),
       ),
-    );
+    );*/
   }
 }
