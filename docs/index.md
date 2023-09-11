@@ -1,5 +1,6 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
+# https://vanchkong.github.io/VitePressCN/guide/getting-started
 layout: home
 
 hero:
