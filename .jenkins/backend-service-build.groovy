@@ -1,7 +1,8 @@
 pipeline {
-  agent any
+  agent none
   stages {
     stage('pull code') {
+      agent any
       environment {
         url = 'https://gitee.com/nocturnal-chorus/chorus-media-player.git'
       }
@@ -11,14 +12,43 @@ pipeline {
         }
       }
     }
-    stage('build') {
+    stage('build proto') {
+      agent {
+        docker {
+          image 'registry.cn-hangzhou.aliyuncs.com/alomerry/tool-protoc:v1'
+        }
+      }
       steps {
-        sh 'echo $(pwd); ls'
-        // sh 'docker run --rm -v ./:/app/src/ -w /app/src registry.cn-hangzhou.aliyuncs.com/alomerry/tool-protoc:v1 bash -c "./build.sh proto"'
-        // sh 'docker run --rm -v ./:/app/src/ -w /app/src/service/music registry.cn-hangzhou.aliyuncs.com/alomerry/base-golang:1.21 bash -c "go build -ldflags='-s -w' -o music"'
+        sh '''
+        cd /var/jenkins_home/workspace/chorus-media-player-backend-service-build/backend
+        ./build.sh proto
+        '''
       }
     }
+    stage('build service') {
+      agent {
+        docker {
+          image 'registry.cn-hangzhou.aliyuncs.com/alomerry/base-golang:1.21'
+        }
+      }
+      steps {
+        sh '''
+        cd /var/jenkins_home/workspace/chorus-media-player-backend-service-build/backend
+        ./build.sh service bin music
+        '''
+      }
+    }
+    stage('check') {
+      agent any
+      steps {
+        sh '''
+        ls -l
+        pwd
+        cd /var/jenkins_home/workspace/chorus-media-player-backend-service-build/backend/service/music
+        ls -l
+        '''
+      }
+    }
+    // TODO deploy to k8s
   }
-  
-  // TODO deploy to k8s
 }
