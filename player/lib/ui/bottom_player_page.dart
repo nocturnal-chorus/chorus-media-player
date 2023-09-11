@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:player/widget/all_widget.dart';
 import '../bloc/bloc_provider.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:player/main_bloc.dart';
@@ -41,7 +41,13 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
                 elevation: 10,
                 child: Padding(
                   padding: EdgeInsets.only(bottom: widget.bottomExtraPadding),
-                  child: Row(),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
