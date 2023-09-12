@@ -2,8 +2,11 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:player/bloc/bloc_provider.dart';
 import 'package:player/ui/demo/demo_bloc.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart'
-    as progress;
+as progress;
 import 'package:player/widget/page.dart';
+import 'package:player/ui/bottom_player_page.dart' as demo;
+
+import '../../main_bloc.dart';
 
 class FtDemoPage extends StatefulWidget {
   const FtDemoPage({super.key});
@@ -15,11 +18,12 @@ class FtDemoPage extends StatefulWidget {
 @Deprecated('remove')
 class _DemoPageState extends State<FtDemoPage> with PageMixin {
   final _demoBloc = FtDemoBloc();
+  FtMainBloc? _mainBloc;
 
   @override
   void initState() {
+    _mainBloc = BlocProvider.of<FtMainBloc>(context);
     super.initState();
-    _demoBloc.initial();
   }
 
   @override
@@ -31,8 +35,8 @@ class _DemoPageState extends State<FtDemoPage> with PageMixin {
   @override
   Widget build(BuildContext context) {
     assert(debugCheckHasFluentTheme(context));
-    return ScaffoldPage();
-    /*return ScaffoldPage.withPadding(
+    //return ScaffoldPage();
+    return ScaffoldPage.withPadding(
       header: PageHeader(
         title: const Text('Demo music playing'),
       ),
@@ -85,21 +89,21 @@ class _DemoPageState extends State<FtDemoPage> with PageMixin {
                     stream: _demoBloc.playerStateStreamCtrl.stream,
                     builder: (context, snapData) {
                       switch (snapData.data) {
-                        case ButtonState.loading:
+                        case demo.ButtonState.loading:
                           return Container(
                             margin: const EdgeInsets.all(8.0),
                             width: 32.0,
                             height: 32.0,
                             child: const ProgressRing(),
                           );
-                        case ButtonState.paused:
+                        case demo.ButtonState.paused:
                           return IconButton(
                             icon: const Icon(FluentIcons.play),
                             onPressed: () {
                               _demoBloc.play();
                             },
                           );
-                        case ButtonState.playing:
+                        case demo.ButtonState.playing:
                           return IconButton(
                             icon: const Icon(FluentIcons.pause),
                             onPressed: () {
@@ -138,6 +142,6 @@ class _DemoPageState extends State<FtDemoPage> with PageMixin {
           ],
         ),
       ),
-    );*/
+    );
   }
 }

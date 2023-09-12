@@ -1,14 +1,14 @@
-import 'dart:isolate';
-
 import 'package:just_audio/just_audio.dart';
 import 'package:player/bloc/base_bloc.dart';
+import 'package:player/repo/entity/song_detail.dart';
 import 'package:player/ui/bottom_player_page.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 
 class FtMainBloc extends FtBaseBloc {
   final progressStreamCtrl = BlocStreamController<ProgressBarState>();
   final playerStateStreamCtrl = BlocStreamController<ButtonState>();
-  final currentSongTitleStreamCtrl = BlocStreamController<String>();
+  final currentSongDetailsStreamCtrl = BlocStreamController<SongDetails?>();
   final isFirstSongStreamCtrl = BlocStreamController<bool>();
   final isLastSongStreamCtrl = BlocStreamController<bool>();
   AudioPlayer? _audioPlayer;
@@ -26,9 +26,17 @@ class FtMainBloc extends FtBaseBloc {
     progressStreamCtrl.add(initProgressStatus);
     playerStateStreamCtrl.add(ButtonState.paused);
     _listenForChangesInPlayerState();
-    _listenForChangesInPlayerPosition(initProgressStatus);
-    _listenForChangesInBufferedPosition(initProgressStatus);
-    _listenForChangesInTotalDuration(initProgressStatus);
+    Rx.combineLatest3(
+        _audioPlayer!.positionStream,
+        _audioPlayer!.bufferedPositionStream,
+        _audioPlayer!.durationStream,
+        (position, bufferedPosition, duration) => ProgressBarState(
+              current: position,
+              buffered: bufferedPosition,
+              total: duration ?? Duration.zero,
+            )).listen((event) {
+      progressStreamCtrl.add(event);
+    });
     _listenForChangesInSequenceState();
   }
 
@@ -51,48 +59,14 @@ class FtMainBloc extends FtBaseBloc {
     });
   }
 
-  void _listenForChangesInPlayerPosition(ProgressBarState initProgressStatus) {
-    _audioPlayer?.positionStream.listen((position) {
-      final oldState = progressStreamCtrl.value ?? initProgressStatus;
-      progressStreamCtrl.add(ProgressBarState(
-        current: position,
-        buffered: oldState.buffered,
-        total: oldState.total,
-      ));
-    });
-  }
-
-  void _listenForChangesInBufferedPosition(
-      ProgressBarState initProgressStatus) {
-    _audioPlayer?.bufferedPositionStream.listen((bufferedPosition) {
-      final oldState = progressStreamCtrl.value ?? initProgressStatus;
-      progressStreamCtrl.add(ProgressBarState(
-        current: oldState.current,
-        buffered: bufferedPosition,
-        total: oldState.total,
-      ));
-    });
-  }
-
-  void _listenForChangesInTotalDuration(ProgressBarState initProgressStatus) {
-    _audioPlayer?.durationStream.listen((totalDuration) {
-      final oldState = progressStreamCtrl.value ?? initProgressStatus;
-      progressStreamCtrl.add(ProgressBarState(
-        current: oldState.current,
-        buffered: oldState.buffered,
-        total: totalDuration ?? Duration.zero,
-      ));
-    });
-  }
-
   void _listenForChangesInSequenceState() {
     _audioPlayer?.sequenceStateStream.listen((sequenceState) {
       if (sequenceState == null) return;
 
       // update current song title
       final currentItem = sequenceState.currentSource;
-      final title = currentItem?.tag as String?;
-      currentSongTitleStreamCtrl.add(title ?? '');
+      final songDetails = currentItem?.tag as SongDetails?;
+      currentSongDetailsStreamCtrl.add(songDetails);
       final playlist = sequenceState.effectiveSequence;
       // update previous and next buttons
       if (playlist.isEmpty || currentItem == null) {
@@ -111,6 +85,10 @@ class FtMainBloc extends FtBaseBloc {
 
   void pause() {
     _audioPlayer?.pause();
+  }
+
+  void stop() {
+    _audioPlayer?.stop();
   }
 
   void seek(Duration position) {
@@ -141,14 +119,55 @@ class FtMainBloc extends FtBaseBloc {
     final song6 = Uri.parse(
         'https://cdn.alomerry.com/media/music/%E6%A8%AA%E5%B1%B1%E5%85%8B%20-%20%E7%A7%81%E3%81%AE%E5%98%98.mp3');
     _playlist = ConcatenatingAudioSource(children: [
-      AudioSource.uri(song0, tag: '偏爱'),
-      AudioSource.uri(song1, tag: 'J.J. Abrams-Fringe 85-《危机边缘 第二季》电视剧插曲'),
-      AudioSource.uri(song2, tag: 'Hans Zimmer-Cornfield Chase'),
+      AudioSource.uri(song0,
+          tag: SongDetails(
+            id: "1",
+            name: '偏爱',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
+      AudioSource.uri(song1,
+          tag: SongDetails(
+            id: "2",
+            name: 'J.J. Abrams-Fringe 85-《危机边缘 第二季》电视剧插曲',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
+      AudioSource.uri(song2,
+          tag: SongDetails(
+            id: "3",
+            name: 'Hans Zimmer-Cornfield Chase',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
       AudioSource.uri(song3,
-          tag: 'Hypnotized - Purple Disco Machine,Sophie and the Giants'),
-      AudioSource.uri(song4, tag: '夜的钢琴曲(五)'),
-      AudioSource.uri(song5, tag: '谢明祥-初夏雨后'),
-      AudioSource.uri(song6, tag: '横山克 - 私の嘘'),
+          tag: SongDetails(
+            id: "4",
+            name: 'Hypnotized - Purple Disco Machine,Sophie and the Giants',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
+      AudioSource.uri(song4,
+          tag: SongDetails(
+            id: "5",
+            name: '夜的钢琴曲(五)',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
+      AudioSource.uri(song5,
+          tag: SongDetails(
+            id: "6",
+            name: '谢明祥-初夏雨后',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
+      AudioSource.uri(song6,
+          tag: SongDetails(
+            id: "7",
+            name: '横山克 - 私の嘘',
+            avatar:
+                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+          )),
     ]);
     await _audioPlayer?.setAudioSource(_playlist);
   }

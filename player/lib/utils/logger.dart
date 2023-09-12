@@ -24,8 +24,11 @@ initLogger(VoidCallback runApp) async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     //add this line
-    await initAppDir();
-    registerImageCacheProvider();
+    if (!DevicesOS.isWeb) {
+      //TODO: web端cache
+      await initAppDir();
+      registerImageCacheProvider();
+    }
     if (DevicesOS.isDesktop) {
       await windowManager.ensureInitialized();
       _initWindows();

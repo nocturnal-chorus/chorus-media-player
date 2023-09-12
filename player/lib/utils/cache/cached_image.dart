@@ -3,13 +3,11 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 import 'dart:ui';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
-import '../logger.dart';
+import 'package:player/utils/all_utils.dart';
 import '../path_util.dart';
 import 'key_value_cache.dart';
 
@@ -166,7 +164,7 @@ const _kImageCacheLoaderPortName = 'image_cache_loader_send_port';
 final _receiverPort = ReceivePort('image_cache_provider');
 
 void registerImageCacheProvider() {
-  if (!Platform.isAndroid && !Platform.isIOS) {
+  if (!DevicesOS.isMobile) {
     return;
   }
   _receiverPort.listen((message) async {
