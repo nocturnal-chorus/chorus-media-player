@@ -75,6 +75,18 @@ pipeline {
         sh "cd backend && ./build.sh service bin ${Modules}"
       }
     }
+    stage('build docker') {
+      agent any
+      steps {
+        sh """
+        cd backend
+        version=$(date "+%Y-%m-%d")-$(date +%s)
+        // TODO iterate service
+        docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-member:`version` -f service/docker/Dockerfile .
+        docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-member:`version`
+        """
+      }
+    }
     stage('check') {
       agent any
       steps {
