@@ -50,6 +50,8 @@ dependencies:
   just_audio_windows: ^0.2.0
   audio_video_progress_bar: ^2.0.0 #demo progress,will remove
   freezed_annotation: ^2.4.1
+  rxdart: ^0.27.7
+  extended_image: ^8.1.1
 
 dev_dependencies:
   flutter_test:

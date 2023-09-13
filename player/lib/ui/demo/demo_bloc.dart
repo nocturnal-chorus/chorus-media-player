@@ -2,6 +2,7 @@ import 'dart:isolate';
 
 import 'package:just_audio/just_audio.dart';
 import 'package:player/bloc/base_bloc.dart';
+import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
 import '../bottom_player_page.dart';
 
@@ -26,9 +27,20 @@ class FtDemoBloc extends FtBaseBloc {
     progressStreamCtrl.add(initProgressStatus);
     playerStateStreamCtrl.add(ButtonState.paused);
     _listenForChangesInPlayerState();
-    _listenForChangesInPlayerPosition(initProgressStatus);
-    _listenForChangesInBufferedPosition(initProgressStatus);
-    _listenForChangesInTotalDuration(initProgressStatus);
+    //_listenForChangesInPlayerPosition(initProgressStatus);
+    Rx.combineLatest3(
+        _audioPlayer!.positionStream,
+        _audioPlayer!.bufferedPositionStream,
+        _audioPlayer!.durationStream,
+        (position, bufferedPosition, duration) => ProgressBarState(
+              current: position,
+              buffered: bufferedPosition,
+              total: duration ?? Duration.zero,
+            )).listen((event) {
+      progressStreamCtrl.add(event);
+    });
+    //_listenForChangesInBufferedPosition(initProgressStatus);
+    //_listenForChangesInTotalDuration(initProgressStatus);
     _listenForChangesInSequenceState();
   }
 

@@ -11,6 +11,7 @@ import 'package:player/utils/all_utils.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'bloc/bloc_provider.dart';
+T? ambiguate<T>(T? value) => value;
 
 Future<void> main() async {
   //init logger and third library
@@ -56,7 +57,7 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   FtApplicationBloc? _appBloc;
   final _mainBloc = FtMainBloc();
   final viewKey = GlobalKey(debugLabel: 'Navigation View Key');
@@ -183,73 +184,88 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     _appBloc = BlocProvider.of<FtApplicationBloc>(context);
     _mainBloc.initial();
+    ambiguate(WidgetsBinding.instance)!.addObserver(this);
     super.initState();
   }
 
   @override
   void dispose() {
     _mainBloc.dispose();
+    ambiguate(WidgetsBinding.instance)!.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      // Release the player's resources when not in use. We use "stop" so that
+      // if the app resumes later, it will still remember what position to
+      // resume from.
+      _mainBloc.stop();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = FluentTheme.of(context);
     final size = MediaQuery.of(context).size;
-    return ScaffoldPage(
-      padding: EdgeInsets.only(top: 0.0),
-      content: NavigationView(
-        key: viewKey,
-        appBar: NavigationAppBar(
-          automaticallyImplyLeading: false,
-          height: DevicesOS.isWeb ? 0 : 50,
-          leading: () {
-            return const SizedBox.shrink();
-          }(),
-          title: () {
-            if (DevicesOS.isWeb) {
-              return const Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(appTitle),
+    return BlocProvider(
+      bloc: _mainBloc,
+      child: ScaffoldPage(
+        padding: EdgeInsets.only(top: 0.0),
+        content: NavigationView(
+          key: viewKey,
+          appBar: NavigationAppBar(
+            automaticallyImplyLeading: false,
+            height: DevicesOS.isWeb ? 0 : 50,
+            leading: () {
+              return const SizedBox.shrink();
+            }(),
+            title: () {
+              if (DevicesOS.isWeb) {
+                return const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(appTitle),
+                );
+              }
+              return const DragToMoveArea(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Text(appTitle),
+                ),
               );
-            }
-            return const DragToMoveArea(
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(appTitle),
-              ),
-            );
-          }(),
-          actions: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            if (DevicesOS.isDesktop) const WindowButtons(),
-          ]),
-        ),
-        paneBodyBuilder: (item, child) {
-          final name =
-              item?.key is ValueKey ? (item!.key as ValueKey).value : null;
-          return FocusTraversalGroup(
-            key: ValueKey('body$name'),
-            child: widget.child,
-          );
-        },
-        pane: NavigationPane(
-          selected: _calculateSelectedIndex(context),
-          header: SizedBox(
-            height: kOneLineTileHeight,
-            child: SizedBox.shrink(),
+            }(),
+            actions: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              if (DevicesOS.isDesktop) const WindowButtons(),
+            ]),
           ),
-          displayMode:
-              _appBloc?.getNavigationDisplayMode() ?? PaneDisplayMode.auto,
-          items: originalItems,
-          autoSuggestBoxReplacement: const Icon(FluentIcons.search),
-          footerItems: footerItems,
+          paneBodyBuilder: (item, child) {
+            final name =
+                item?.key is ValueKey ? (item!.key as ValueKey).value : null;
+            return FocusTraversalGroup(
+              key: ValueKey('body$name'),
+              child: widget.child,
+            );
+          },
+          pane: NavigationPane(
+            selected: _calculateSelectedIndex(context),
+            header: SizedBox(
+              height: kOneLineTileHeight,
+              child: SizedBox.shrink(),
+            ),
+            displayMode:
+                _appBloc?.getNavigationDisplayMode() ?? PaneDisplayMode.auto,
+            items: originalItems,
+            autoSuggestBoxReplacement: const Icon(FluentIcons.search),
+            footerItems: footerItems,
+          ),
         ),
-      ),
-      //TODO: 移动端隐藏
-      bottomBar: Container(
-        color: theme.activeColor,
-        width: size.width,
-        child: FtBottomPlayerPage(),
+        //TODO: 移动端隐藏
+        bottomBar: Container(
+          color: theme.activeColor,
+          width: size.width,
+          child: FtBottomPlayerPage(),
+        ),
       ),
     );
   }
