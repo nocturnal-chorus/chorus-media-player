@@ -5,5 +5,4 @@ ARG module
 WORKDIR /app/${module}
 
 COPY service/scripts/start /etc/service/${module}/run
-COPY service/${module}/conf /app/${module}/conf
 COPY service/${module}/${module} /app/${module}/

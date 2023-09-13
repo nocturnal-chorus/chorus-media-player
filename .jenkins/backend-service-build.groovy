@@ -86,9 +86,18 @@ pipeline {
           services.each{
             sh """
             cd backend
-            docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:$version --build-arg module=$it -f service/docker/Dockerfile .
-            docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:$version
+            docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version --build-arg module=$it -f service/docker/Dockerfile .
             """
+            withCredentials([
+              usernamePassword(
+                credentialsId: 'docker-login', 
+                passwordVariable: 'password', 
+                usernameVariable: 'username'
+              )
+            ]) {
+              sh "echo ${password} | docker login --username=${username} registry.cn-hangzhou.aliyuncs.com --password-stdin"
+            }
+            sh "docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version"
           }
         }
       }
