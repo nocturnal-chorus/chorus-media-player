@@ -89,21 +89,21 @@ class _DemoPageState extends State<FtDemoPage> with PageMixin {
                     stream: _demoBloc.playerStateStreamCtrl.stream,
                     builder: (context, snapData) {
                       switch (snapData.data) {
-                        case demo.ButtonState.loading:
+                        case demo.PlayerButtonState.loading:
                           return Container(
                             margin: const EdgeInsets.all(8.0),
                             width: 32.0,
                             height: 32.0,
                             child: const ProgressRing(),
                           );
-                        case demo.ButtonState.paused:
+                        case demo.PlayerButtonState.paused:
                           return IconButton(
                             icon: const Icon(FluentIcons.play),
                             onPressed: () {
                               _demoBloc.play();
                             },
                           );
-                        case demo.ButtonState.playing:
+                        case demo.PlayerButtonState.playing:
                           return IconButton(
                             icon: const Icon(FluentIcons.pause),
                             onPressed: () {

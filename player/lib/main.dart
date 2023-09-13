@@ -261,8 +261,9 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
         ),
         //TODO: 移动端隐藏
+        //TODO: 未跟随主题变色
         bottomBar: Container(
-          color: theme.activeColor,
+          color: theme.scaffoldBackgroundColor,
           width: size.width,
           child: FtBottomPlayerPage(),
         ),

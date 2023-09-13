@@ -7,16 +7,18 @@ import '../../bloc/bloc_provider.dart';
 
 class FtMainBloc extends FtBaseBloc {
   final progressStreamCtrl = BlocStreamController<ProgressBarState>();
-  final playerStateStreamCtrl = BlocStreamController<ButtonState>();
+  final playerStateStreamCtrl = BlocStreamController<PlayerButtonState>();
   final currentSongDetailsStreamCtrl = BlocStreamController<SongDetails?>();
   final isFirstSongStreamCtrl = BlocStreamController<bool>();
   final isLastSongStreamCtrl = BlocStreamController<bool>();
+  final repeatStateStreamCtrl = BlocStreamController<LoopMode>();
   AudioPlayer? _audioPlayer;
   late ConcatenatingAudioSource _playlist;
 
   void initial() async {
     //TODO: desktop crash
     _audioPlayer = AudioPlayer();
+    repeatStateStreamCtrl.add(LoopMode.off);
     prePlayList();
     var initProgressStatus = ProgressBarState(
       current: Duration.zero,
@@ -24,7 +26,7 @@ class FtMainBloc extends FtBaseBloc {
       total: Duration.zero,
     );
     progressStreamCtrl.add(initProgressStatus);
-    playerStateStreamCtrl.add(ButtonState.paused);
+    playerStateStreamCtrl.add(PlayerButtonState.paused);
     _listenForChangesInPlayerState();
     Rx.combineLatest3(
         _audioPlayer!.positionStream,
@@ -46,11 +48,11 @@ class FtMainBloc extends FtBaseBloc {
       final processingState = playerState.processingState;
       if (processingState == ProcessingState.loading ||
           processingState == ProcessingState.buffering) {
-        playerStateStreamCtrl.add(ButtonState.loading);
+        playerStateStreamCtrl.add(PlayerButtonState.loading);
       } else if (!isPlaying) {
-        playerStateStreamCtrl.add(ButtonState.paused);
+        playerStateStreamCtrl.add(PlayerButtonState.paused);
       } else if (processingState != ProcessingState.completed) {
-        playerStateStreamCtrl.add(ButtonState.playing);
+        playerStateStreamCtrl.add(PlayerButtonState.playing);
       } else {
         // completed
         _audioPlayer?.seek(Duration.zero);
@@ -103,6 +105,31 @@ class FtMainBloc extends FtBaseBloc {
     _audioPlayer?.seekToNext();
   }
 
+  void onRepeatButtonPressed() {
+    switch (repeatStateStreamCtrl.value) {
+      case LoopMode.off:
+        repeatStateStreamCtrl.add(LoopMode.one);
+        break;
+      case LoopMode.one:
+        repeatStateStreamCtrl.add(LoopMode.all);
+        break;
+      case LoopMode.all:
+        repeatStateStreamCtrl.add(LoopMode.off);
+        break;
+      default:
+        repeatStateStreamCtrl.add(LoopMode.one);
+        break;
+    }
+  }
+
+  void onShuffleButtonPressed() async {
+    final enable = _audioPlayer?.shuffleModeEnabled == false;
+    if (enable) {
+      await _audioPlayer?.shuffle();
+    }
+    await _audioPlayer?.setShuffleModeEnabled(enable);
+  }
+
   void prePlayList() async {
     final song0 =
         Uri.parse("http://music.163.com/song/media/outer/url?id=5238992.mp3");
@@ -123,22 +150,20 @@ class FtMainBloc extends FtBaseBloc {
           tag: SongDetails(
             id: "1",
             name: '偏爱',
-            avatar:
-                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+            avatar: 'https://cdn.alomerry.com/media/images/ddns.png',
           )),
       AudioSource.uri(song1,
           tag: SongDetails(
             id: "2",
             name: 'J.J. Abrams-Fringe 85-《危机边缘 第二季》电视剧插曲',
-            avatar:
-                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+            avatar: 'https://cdn.alomerry.com/media/images/jenkins.svg',
           )),
       AudioSource.uri(song2,
           tag: SongDetails(
             id: "3",
             name: 'Hans Zimmer-Cornfield Chase',
             avatar:
-                'http://d.hiphotos.baidu.com/image/pic/item/b58f8c5494eef01f119945cbe2fe9925bc317d2a.jpg',
+                'https://cdn.alomerry.com/blog/assets/img/about/qiniu-cdn.svg',
           )),
       AudioSource.uri(song3,
           tag: SongDetails(
