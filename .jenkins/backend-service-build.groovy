@@ -60,7 +60,6 @@ pipeline {
               fi
             """).trim()
             Modules = modules
-            echo "${Modules} ${modules}"
           }
         }
       }
@@ -78,24 +77,20 @@ pipeline {
     stage('build docker') {
       agent any
       steps {
-        sh """
-        cd backend
-        version=$(date "+%Y-%m-%d")-$(date +%s)
-        // TODO iterate service
-        docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-member:`version` -f service/docker/Dockerfile .
-        docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-member:`version`
-        """
-      }
-    }
-    stage('check') {
-      agent any
-      steps {
-        sh '''
-        ls -l
-        pwd
-        cd /var/jenkins_home/workspace/chorus-media-player-backend-service-build/backend/service/music
-        ls -l
-        '''
+        script {
+          if (Modules == "all") {
+            Modules = "music member"
+          }
+          def services = Modules.split(' ');
+          def version = System.currentTimeMillis();
+          services.each{
+            sh """
+            cd backend
+            docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:$version --build-arg module=$it -f service/docker/Dockerfile .
+            docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:$version
+            """
+          }
+        }
       }
     }
     // TODO deploy to k8s
