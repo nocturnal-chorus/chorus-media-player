@@ -37,6 +37,11 @@ generate_protobuf_stub() {
   done
 }
 
+generate_gateway_loader() {
+  cd proto/scripts
+  go build -ldflags="-s -w" generate_gateway_loader.go
+}
+
 clean() {
   title "bash version: $BASH_VERSION"
   set +e

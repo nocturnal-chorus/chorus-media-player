@@ -6,6 +6,7 @@ GOLANG_IMAGE="registry.cn-hangzhou.aliyuncs.com/alomerry/base-golang:1.21"
 build_service() {
   echo "Start build service [$1] ..."
   go build -ldflags="-s -w" -o service/$1/$1 service/$1/main.go 
+  chmod +x service/$1/$1
   echo "Built $1 bin success!"
 }
 

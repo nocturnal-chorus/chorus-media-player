@@ -44,7 +44,7 @@ pipeline {
       }
       steps {
         sh '''
-        cd /var/jenkins_home/workspace/chorus-media-player-backend-service-build/backend
+        cd backend
         ./build.sh proto
         '''
       }
@@ -76,10 +76,13 @@ pipeline {
     }
     stage('build docker') {
       agent any
+      environment {
+        DOCKER_ACESS = credentials('docker-login')
+      }
       steps {
         script {
-          if (Modules == "all") {
-            Modules = "music member"
+          if (Modules == "all" || Modules == "") {
+            Modules = "music"
           }
           def services = Modules.split(' ');
           def version = System.currentTimeMillis();
@@ -88,15 +91,7 @@ pipeline {
             cd backend
             docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version --build-arg module=$it -f service/docker/Dockerfile .
             """
-            withCredentials([
-              usernamePassword(
-                credentialsId: 'docker-login', 
-                passwordVariable: 'password', 
-                usernameVariable: 'username'
-              )
-            ]) {
-              sh "echo ${password} | docker login --username=${username} registry.cn-hangzhou.aliyuncs.com --password-stdin"
-            }
+            sh 'echo ${DOCKER_ACESS_PSW} | docker login --username=${DOCKER_ACESS_USR} registry.cn-hangzhou.aliyuncs.com --password-stdin'
             sh "docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version"
           }
         }

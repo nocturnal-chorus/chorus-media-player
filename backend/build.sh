@@ -6,6 +6,7 @@ HOME_PATH=$(
 )
 
 SERVICE_PATH=${HOME_PATH}/service
+OPENAPI_PATH=${HOME_PATH}/openapi/consumer
 PROTO_PATH=${HOME_PATH}/proto
 
 main() {
@@ -15,6 +16,9 @@ main() {
       ;;
     proto)
       "${PROTO_PATH}"/gen-stub "${@:2}"
+      ;;
+    openapi-consumer)
+      "${OPENAPI_PATH}"/scripts/build "${@:2}"
       ;;
     service)
       "${SERVICE_PATH}"/scripts/build "${@:2}"

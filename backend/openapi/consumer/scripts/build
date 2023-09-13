@@ -1,0 +1,8 @@
+build() {
+  (cd ./proto/scripts/genGatewayLoader && go build -o ./generate_gateway_loader ./generate_gateway_loader.go)
+  (cd ./proto/scripts/genGatewayLoader && chmod +x ./generate_gateway_loader && ./generate_gateway_loader)
+  (cd ./openapi/consumer && go build -ldflags="-s -w" -o ./openapi ./main.go)
+  chmod +x openapi/consumer/openapi
+}
+
+build "$@"

@@ -3,14 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/nocturnal-chorus/chorus-media-player/core/log"
 	"github.com/nocturnal-chorus/chorus-media-player/openapi/consumer/controller"
 	"github.com/nocturnal-chorus/chorus-media-player/openapi/consumer/middleware"
 	"github.com/nocturnal-chorus/chorus-media-player/proto"
 	"gopkg.in/tylerb/graceful.v1"
-	"net/http"
-	"time"
 )
 
 func main() {

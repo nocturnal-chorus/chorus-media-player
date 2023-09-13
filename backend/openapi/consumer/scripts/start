@@ -1,0 +1,5 @@
+#!/bin/bash
+PORT=${PORT:-9093}
+
+cd /app/openapi
+exec ./openapi --port=$PORT

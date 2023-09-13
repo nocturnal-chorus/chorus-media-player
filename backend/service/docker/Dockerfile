@@ -1,6 +1,6 @@
 FROM phusion/baseimage:focal-1.1.0
 
-EXPOSE 1701
+EXPOSE 8091
 ARG module
 WORKDIR /app/${module}
 

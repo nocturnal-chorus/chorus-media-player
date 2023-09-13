@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SERVICE_NAME=$(ls /app)
-PORT=${PORT:-1701}
+PORT=${PORT:-8091}
 
 cd /app/$SERVICE_NAME
 exec ./${SERVICE_NAME} --port=${PORT}

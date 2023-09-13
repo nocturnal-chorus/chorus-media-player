@@ -26,6 +26,8 @@ package proto
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	{{range .Services}} "github.com/nocturnal-chorus/chorus-media-player/proto/{{.ServiceName}}"
 	{{end}}
@@ -54,8 +56,7 @@ func NewGateway(ctx context.Context) (http.Handler, error) {
 }
 
 func genEndpointByService(serviceName string) string {
-	//return fmt.Sprintf("%s:8089", strings.ToLower(strings.Replace(serviceName, "Service", "", -1)))
-	return "127.0.0.1:8089"
+	return fmt.Sprintf("player-%s-service:8091", strings.ToLower(strings.Replace(serviceName, "Service", "", -1)))
 }
 
 `,
