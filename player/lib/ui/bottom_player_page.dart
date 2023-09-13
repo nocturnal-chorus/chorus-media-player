@@ -4,10 +4,11 @@ import 'package:player/widget/all_widget.dart';
 import '../bloc/bloc_provider.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:player/main_bloc.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart' as ic;
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart'
     as progress;
 
-enum ButtonState { paused, playing, loading }
+enum PlayerButtonState { paused, playing, loading }
 
 class FtBottomPlayerPage extends StatefulWidget {
   /// safe area.
@@ -49,6 +50,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
                       ),
                       _centerController(),
                       SizedBox(width: 20),
+                      Expanded(child: _playerControl()),
                     ],
                   ),
                 ),
@@ -131,7 +133,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
               stream: _mainBloc?.isFirstSongStreamCtrl.stream,
               builder: (context, snapData) {
                 return IconButton(
-                  icon: const Icon(FluentIcons.previous),
+                  icon: const Icon(ic.FluentIcons.previous_16_filled),
                   onPressed: () {
                     (snapData.data == true)
                         ? null
@@ -145,22 +147,22 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
               stream: _mainBloc!.playerStateStreamCtrl.stream,
               builder: (context, snapData) {
                 switch (snapData.data) {
-                  case ButtonState.loading:
+                  case PlayerButtonState.loading:
                     return Container(
                       width: 24,
                       height: 24,
                       child: const ProgressRing(),
                     );
-                  case ButtonState.paused:
+                  case PlayerButtonState.paused:
                     return IconButton(
-                      icon: const Icon(FluentIcons.play),
+                      icon: const Icon(ic.FluentIcons.play_20_filled),
                       onPressed: () {
                         _mainBloc?.play();
                       },
                     );
-                  case ButtonState.playing:
+                  case PlayerButtonState.playing:
                     return IconButton(
-                      icon: const Icon(FluentIcons.pause),
+                      icon: const Icon(ic.FluentIcons.pause_16_filled),
                       onPressed: () {
                         _mainBloc?.pause();
                       },
@@ -179,7 +181,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
               stream: _mainBloc?.isLastSongStreamCtrl.stream,
               builder: (context, snapData) {
                 return IconButton(
-                  icon: const Icon(FluentIcons.next),
+                  icon: const Icon(ic.FluentIcons.next_20_filled),
                   onPressed: () {
                     (snapData.data == true)
                         ? null
@@ -194,7 +196,39 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
     );
   }
 
+  Widget _playerControl() {
+    return Row(
+      children: [
+        const Spacer(),
+        //TODO: Like button
+        const SizedBox(width: 10),
+        Padding(
+          padding: EdgeInsets.only(right: 10),
+          child: _playerRepeatModeIconButton(),
+        ),
+        //TODO: 播放列表
+        //const _PlayingListButton(),
+        Padding(
+          padding: EdgeInsets.only(left: 10),
+          child: _volumeControl(),
+        ),
+        const SizedBox(width: 20),
+      ],
+    );
+  }
+
+  Widget _playerRepeatModeIconButton() {
+    return SizedBox();
+  }
+
+  Widget _volumeControl() {
+    return SizedBox();
+  }
+
   Widget _progressBar() {
+    final theme = FluentTheme.of(context);
+    //TODO: progress样式调整
+    final progressStyle = SliderTheme.of(context);
     return StreamBuilder(
       stream: _mainBloc?.progressStreamCtrl.stream,
       builder: (ctx, snapData) {
@@ -208,6 +242,10 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
               progress: progressData.current,
               buffered: progressData.buffered,
               total: progressData.total,
+              barHeight: 4.5,
+              baseBarColor: theme.inactiveColor,
+              progressBarColor:
+                  theme.accentColor.defaultBrushFor(theme.brightness),
               onSeek: (duration) {
                 _mainBloc?.seek(duration);
               },

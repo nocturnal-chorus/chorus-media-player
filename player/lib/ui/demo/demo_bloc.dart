@@ -8,7 +8,7 @@ import '../bottom_player_page.dart';
 
 class FtDemoBloc extends FtBaseBloc {
   final progressStreamCtrl = BlocStreamController<ProgressBarState>();
-  final playerStateStreamCtrl = BlocStreamController<ButtonState>();
+  final playerStateStreamCtrl = BlocStreamController<PlayerButtonState>();
   final currentSongTitleStreamCtrl = BlocStreamController<String>();
   final isFirstSongStreamCtrl = BlocStreamController<bool>();
   final isLastSongStreamCtrl = BlocStreamController<bool>();
@@ -25,7 +25,7 @@ class FtDemoBloc extends FtBaseBloc {
       total: Duration.zero,
     );
     progressStreamCtrl.add(initProgressStatus);
-    playerStateStreamCtrl.add(ButtonState.paused);
+    playerStateStreamCtrl.add(PlayerButtonState.paused);
     _listenForChangesInPlayerState();
     //_listenForChangesInPlayerPosition(initProgressStatus);
     Rx.combineLatest3(
@@ -50,11 +50,11 @@ class FtDemoBloc extends FtBaseBloc {
       final processingState = playerState.processingState;
       if (processingState == ProcessingState.loading ||
           processingState == ProcessingState.buffering) {
-        playerStateStreamCtrl.add(ButtonState.loading);
+        playerStateStreamCtrl.add(PlayerButtonState.loading);
       } else if (!isPlaying) {
-        playerStateStreamCtrl.add(ButtonState.paused);
+        playerStateStreamCtrl.add(PlayerButtonState.paused);
       } else if (processingState != ProcessingState.completed) {
-        playerStateStreamCtrl.add(ButtonState.playing);
+        playerStateStreamCtrl.add(PlayerButtonState.playing);
       } else {
         // completed
         _audioPlayer?.seek(Duration.zero);
