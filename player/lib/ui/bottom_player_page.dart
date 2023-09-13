@@ -44,11 +44,14 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
                   padding: EdgeInsets.only(bottom: widget.bottomExtraPadding),
                   child: Row(
                     children: [
-                      Expanded(child: _playingItem()),
-                      SizedBox(
-                        width: 20,
+                      Expanded(
+                        child: _playingItem(),
+                        flex: 2,
                       ),
-                      _centerController(),
+                      Expanded(
+                        child: _centerController(),
+                        flex: 5,
+                      ),
                       SizedBox(width: 20),
                       Expanded(child: _playerControl()),
                     ],
@@ -56,7 +59,6 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
                 ),
               ),
             ),
-            Align(alignment: Alignment.bottomCenter, child: _progressBar()),
           ],
         ),
       ),
@@ -124,10 +126,12 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
 
   Widget _centerController() {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             StreamBuilder(
               stream: _mainBloc?.isFirstSongStreamCtrl.stream,
@@ -192,6 +196,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
             ),
           ],
         ),
+        _progressBar(),
       ],
     );
   }
@@ -244,8 +249,11 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
               total: progressData.total,
               barHeight: 4.5,
               baseBarColor: theme.inactiveColor,
+              thumbRadius: 8,
+              thumbGlowRadius: 16,
+              timeLabelLocation: progress.TimeLabelLocation.sides,
               progressBarColor:
-                  theme.accentColor.defaultBrushFor(theme.brightness),
+              theme.accentColor.defaultBrushFor(theme.brightness),
               onSeek: (duration) {
                 _mainBloc?.seek(duration);
               },

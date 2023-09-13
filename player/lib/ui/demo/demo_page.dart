@@ -5,7 +5,6 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart'
 as progress;
 import 'package:player/widget/page.dart';
 import 'package:player/ui/bottom_player_page.dart' as demo;
-
 import '../../main_bloc.dart';
 
 class FtDemoPage extends StatefulWidget {

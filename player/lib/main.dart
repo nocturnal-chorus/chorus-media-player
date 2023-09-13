@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' as m;
 import 'package:go_router/go_router.dart';
 import 'package:player/app/application.dart';
 import 'package:player/app/application_bloc.dart';
@@ -261,11 +262,13 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
           ),
         ),
         //TODO: 移动端隐藏
-        //TODO: 未跟随主题变色
-        bottomBar: Container(
-          color: theme.scaffoldBackgroundColor,
-          width: size.width,
-          child: FtBottomPlayerPage(),
+        bottomBar: m.Material(
+          color: theme.micaBackgroundColor,
+          child: Container(
+            width: size.width,
+            height: 72,
+            child: const FtBottomPlayerPage(),
+          ),
         ),
       ),
     );

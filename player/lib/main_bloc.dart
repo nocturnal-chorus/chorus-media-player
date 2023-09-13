@@ -150,13 +150,14 @@ class FtMainBloc extends FtBaseBloc {
           tag: SongDetails(
             id: "1",
             name: '偏爱',
-            avatar: 'https://cdn.alomerry.com/media/images/ddns.png',
+            avatar:
+                'http://g.hiphotos.baidu.com/image/pic/item/6d81800a19d8bc3e770bd00d868ba61ea9d345f2.jpg',
           )),
       AudioSource.uri(song1,
           tag: SongDetails(
             id: "2",
             name: 'J.J. Abrams-Fringe 85-《危机边缘 第二季》电视剧插曲',
-            avatar: 'https://cdn.alomerry.com/media/images/jenkins.svg',
+            avatar: 'https://cdn.alomerry.com/media/images/ddns.png',
           )),
       AudioSource.uri(song2,
           tag: SongDetails(
