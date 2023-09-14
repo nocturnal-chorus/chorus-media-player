@@ -13,7 +13,7 @@ class _PlayerApi implements PlayerApi {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://api.nocturnal-chorus.com/';
+    baseUrl ??= 'https://consumer-api.nocturnal-chorus.com/';
   }
 
   final Dio _dio;
