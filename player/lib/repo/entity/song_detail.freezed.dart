@@ -21,13 +21,10 @@ SongDetails _$SongDetailsFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$SongDetails {
   String? get id => throw _privateConstructorUsedError;
-
   String? get name => throw _privateConstructorUsedError;
-
   String? get avatar => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
   @JsonKey(ignore: true)
   $SongDetailsCopyWith<SongDetails> get copyWith =>
       throw _privateConstructorUsedError;
@@ -38,7 +35,6 @@ abstract class $SongDetailsCopyWith<$Res> {
   factory $SongDetailsCopyWith(
           SongDetails value, $Res Function(SongDetails) then) =
       _$SongDetailsCopyWithImpl<$Res, SongDetails>;
-
   @useResult
   $Res call({String? id, String? name, String? avatar});
 }
@@ -50,7 +46,6 @@ class _$SongDetailsCopyWithImpl<$Res, $Val extends SongDetails>
 
   // ignore: unused_field
   final $Val _value;
-
   // ignore: unused_field
   final $Res Function($Val) _then;
 
@@ -84,7 +79,6 @@ abstract class _$$_SongDetailsCopyWith<$Res>
   factory _$$_SongDetailsCopyWith(
           _$_SongDetails value, $Res Function(_$_SongDetails) then) =
       __$$_SongDetailsCopyWithImpl<$Res>;
-
   @override
   @useResult
   $Res call({String? id, String? name, String? avatar});
@@ -191,13 +185,10 @@ abstract class _SongDetails implements SongDetails {
 
   @override
   String? get id;
-
   @override
   String? get name;
-
   @override
   String? get avatar;
-
   @override
   @JsonKey(ignore: true)
   _$$_SongDetailsCopyWith<_$_SongDetails> get copyWith =>

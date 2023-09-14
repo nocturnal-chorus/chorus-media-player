@@ -227,7 +227,47 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
   }
 
   Widget _volumeControl() {
-    return SizedBox();
+    return StreamBuilder(
+      stream: _mainBloc?.volumeStreamCtrl.stream,
+      builder: (ctx, snap) {
+        final volume = snap.data ?? 0.0;
+        final isMuted = volume <= 0.0001;
+        IconData icon;
+        if (isMuted) {
+          icon = ic.FluentIcons.speaker_off_16_regular;
+        } else if (volume <= 0.2) {
+          icon = ic.FluentIcons.speaker_0_16_regular;
+        } else if (volume <= 0.5) {
+          icon = ic.FluentIcons.speaker_1_16_regular;
+        } else {
+          icon = ic.FluentIcons.speaker_2_16_regular;
+        }
+        return HoverOverlay(
+          targetAnchor: Alignment.topCenter,
+          followerAnchor: Alignment.bottomCenter,
+          overlayBuilder: (context, progress) {
+            return Opacity(
+              opacity: progress,
+              child: Slider(
+                vertical: true,
+                value: (volume * 100).clamp(0.0, 100.0),
+                max: 100,
+                onChanged: (value) {
+                  _mainBloc?.setVolume(value / 100);
+                },
+                onChangeEnd: (value) {
+                  _mainBloc?.setVolume(value / 100);
+                },
+              ),
+            );
+          },
+          child: IconButton(
+            icon: Icon(icon),
+            onPressed: () {},
+          ),
+        );
+      },
+    );
   }
 
   Widget _progressBar() {

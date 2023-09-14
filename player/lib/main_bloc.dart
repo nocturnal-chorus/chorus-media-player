@@ -12,6 +12,7 @@ class FtMainBloc extends FtBaseBloc {
   final isFirstSongStreamCtrl = BlocStreamController<bool>();
   final isLastSongStreamCtrl = BlocStreamController<bool>();
   final repeatStateStreamCtrl = BlocStreamController<LoopMode>();
+  final volumeStreamCtrl = BlocStreamController<double>();
   AudioPlayer? _audioPlayer;
   late ConcatenatingAudioSource _playlist;
 
@@ -40,6 +41,7 @@ class FtMainBloc extends FtBaseBloc {
       progressStreamCtrl.add(event);
     });
     _listenForChangesInSequenceState();
+    _listenForChangesInVolume();
   }
 
   void _listenForChangesInPlayerState() {
@@ -58,6 +60,16 @@ class FtMainBloc extends FtBaseBloc {
         _audioPlayer?.seek(Duration.zero);
         _audioPlayer?.pause();
       }
+    });
+  }
+
+  void setVolume(double data) async {
+    _audioPlayer?.setVolume(data);
+  }
+
+  void _listenForChangesInVolume() {
+    _audioPlayer?.volumeStream.listen((event) {
+      volumeStreamCtrl.add(event);
     });
   }
 
@@ -201,6 +213,13 @@ class FtMainBloc extends FtBaseBloc {
   @override
   void onDispose() {
     _audioPlayer?.dispose();
+    currentSongDetailsStreamCtrl.close();
+    isFirstSongStreamCtrl.close();
+    isLastSongStreamCtrl.close();
+    playerStateStreamCtrl.close();
+    progressStreamCtrl.close();
+    repeatStateStreamCtrl.close();
+    volumeStreamCtrl.close();
   }
 }
 
