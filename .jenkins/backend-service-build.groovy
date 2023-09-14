@@ -93,7 +93,7 @@ pipeline {
             """
             sh 'echo ${DOCKER_ACESS_PSW} | docker login --username=${DOCKER_ACESS_USR} registry.cn-hangzhou.aliyuncs.com --password-stdin'
             sh "docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version"
-            sh 'echo 'y' | docker image prune'
+            sh 'echo "y" | docker image prune'
             build job: 'chorus-media-player-k8s-deploy', parameters: [
               [$class: 'StringParameterValue', name: 'PROJECT', value: "backend"],
               [$class: 'StringParameterValue', name: 'MODULES', value: it],
