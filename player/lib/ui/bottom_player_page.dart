@@ -249,6 +249,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
             return Opacity(
               opacity: progress,
               child: Slider(
+                vertical: true,
                 value: (volume * 100).clamp(0.0, 100.0),
                 max: 100,
                 onChanged: (value) {
