@@ -64,6 +64,7 @@ class FtMainBloc extends FtBaseBloc {
   }
 
   void setVolume(double data) async {
+    volumeStreamCtrl.add(data);
     _audioPlayer?.setVolume(data);
   }
 
@@ -222,8 +223,6 @@ class FtMainBloc extends FtBaseBloc {
     volumeStreamCtrl.close();
   }
 }
-
-class PageManager {}
 
 class ProgressBarState {
   ProgressBarState({
