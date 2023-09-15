@@ -1,4 +1,6 @@
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/material.dart' as m;
+import 'package:just_audio/just_audio.dart';
 import 'package:player/utils/all_utils.dart';
 import 'package:player/widget/all_widget.dart';
 import '../bloc/bloc_provider.dart';
@@ -9,6 +11,14 @@ import 'package:audio_video_progress_bar/audio_video_progress_bar.dart'
     as progress;
 
 enum PlayerButtonState { paused, playing, loading }
+
+//TODO: 播放模式
+enum RepeatMode {
+  shuffle,
+  single,
+  sequence,
+  off,
+}
 
 class FtBottomPlayerPage extends StatefulWidget {
   /// safe area.
@@ -53,7 +63,9 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
                         flex: 5,
                       ),
                       SizedBox(width: 20),
-                      Expanded(child: _playerControl()),
+                      Expanded(
+                        child: _playerControl(),
+                      ),
                     ],
                   ),
                 ),
@@ -212,7 +224,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
           child: _playerRepeatModeIconButton(),
         ),
         //TODO: 播放列表
-        //const _PlayingListButton(),
+        _playingListButton(),
         Padding(
           padding: EdgeInsets.only(left: 10),
           child: _volumeControl(),
@@ -223,10 +235,56 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
   }
 
   Widget _playerRepeatModeIconButton() {
+    //TODO: 播放模式调整
+    return StreamBuilder(
+      stream: _mainBloc?.repeatStateStreamCtrl.stream,
+      builder: (ctx, snapData) {
+        final mode = snapData.data;
+        final String text;
+        final IconData icon;
+        switch (mode) {
+          case LoopMode.off:
+            text = "顺序";
+            icon = ic.FluentIcons.arrow_repeat_all_20_regular;
+            break;
+          case LoopMode.one:
+            text = "单曲循环";
+            icon = ic.FluentIcons.arrow_repeat_1_20_regular;
+            break;
+          case LoopMode.all:
+            text = "循环";
+            icon = ic.FluentIcons.arrow_repeat_all_20_regular;
+            break;
+          default:
+            text = "顺序";
+            icon = ic.FluentIcons.arrow_repeat_all_20_regular;
+            break;
+        }
+        return Tooltip(
+          message: text,
+          useMousePosition: false,
+          triggerMode: TooltipTriggerMode.tap,
+          style: const TooltipThemeData(
+            preferBelow: true,
+            waitDuration: Duration(),
+          ),
+          child: IconButton(
+            icon: Icon(icon),
+            onPressed: () {
+              _mainBloc?.onRepeatButtonPressed();
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _playingListButton() {
     return SizedBox();
   }
 
   Widget _volumeControl() {
+    final theme = FluentTheme.of(context);
     return StreamBuilder(
       stream: _mainBloc?.volumeStreamCtrl.stream,
       builder: (ctx, snap) {
@@ -246,18 +304,31 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
           targetAnchor: Alignment.topCenter,
           followerAnchor: Alignment.bottomCenter,
           overlayBuilder: (context, progress) {
+            //TODO: 优化滑块平滑性
             return Opacity(
               opacity: progress,
-              child: Slider(
-                vertical: true,
-                value: (volume * 100).clamp(0.0, 100.0),
-                max: 100,
-                onChanged: (value) {
-                  _mainBloc?.setVolume(value / 100);
-                },
-                onChangeEnd: (value) {
-                  _mainBloc?.setVolume(value / 100);
-                },
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: m.Material(
+                  color: theme.cardColor,
+                  elevation: 10,
+                  shadowColor: theme.shadowColor,
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      topRight: Radius.circular(4)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
+                    child: SizedBox(
+                      child: Slider(
+                          vertical: true,
+                          value: (volume * 100).clamp(0.0, 100.0),
+                          onChanged: (value) {
+                            _mainBloc?.setVolume(value / 100);
+                          }),
+                    ),
+                  ),
+                ),
               ),
             );
           },
