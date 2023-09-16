@@ -6,12 +6,14 @@ import 'package:player/app/application_bloc.dart';
 import 'package:player/main_bloc.dart';
 import 'package:player/route/navigator_provider.dart';
 import 'package:player/ui/bottom_player_page.dart';
-import 'package:player/ui/demo/demo_page.dart';
+import 'package:player/ui/desktop/home/desktop_home_page.dart';
+import 'package:player/ui/desktop/playing/playing_details_page.dart';
 import 'package:player/ui/settings/settings_page.dart';
 import 'package:player/utils/all_utils.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'bloc/bloc_provider.dart';
+
 T? ambiguate<T>(T? value) => value;
 
 Future<void> main() async {
@@ -33,10 +35,13 @@ final router = GoRouter(navigatorKey: NavigatorProvider.navigatorKey, routes: [
         child: child,
       );
     },
-    //TODO: 首页
     routes: [
       /// Home
-      GoRoute(path: '/', builder: (context, state) => const FtDemoPage()),
+      GoRoute(
+          path: '/', builder: (context, state) => const FtDesktopHomePage()),
+      GoRoute(
+          path: '/desktop/playingDetails',
+          builder: (context, state) => const FtDesktopPlayingDetailsPage()),
       GoRoute(
           path: '/settings',
           builder: (context, state) => const FtSettingsPage()),
