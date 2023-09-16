@@ -1,5 +1,6 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart' as m;
+import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:player/utils/all_utils.dart';
 import 'package:player/widget/all_widget.dart';
@@ -81,6 +82,7 @@ class _BottomPlayerState extends State<FtBottomPlayerPage> {
     return GestureDetector(
       onTap: () {
         //TODO: 歌曲详情
+        context.go('/desktop/playingDetails');
       },
       child: StreamBuilder(
         stream: _mainBloc?.currentSongDetailsStreamCtrl.stream,
