@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:player/ui/player/cover_page.dart';
 import '../../../bloc/bloc_provider.dart';
 import '../../../main_bloc.dart';
 import '../../../widget/all_widget.dart';
@@ -38,9 +39,42 @@ class _DesktopPlayingDetailsPageState extends State<FtDesktopPlayingDetailsPage>
       ),
       content: BlocProvider(
         bloc: _detailsBloc,
-        child: Column(
-          children: [],
+        child: Row(
+          children: [
+            Flexible(
+              child: _layoutCover(),
+              flex: 5,
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _layoutCover() {
+    return Padding(
+      padding: EdgeInsets.only(left: 20),
+      child: StreamBuilder(
+        stream: _mainBloc?.currentSongDetailsStreamCtrl.stream,
+        builder: (ctx, snapData) {
+          final currentSong = _mainBloc?.currentSongDetailsStreamCtrl.value;
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: IgnorePointer(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    child: currentSong == null
+                        ? SizedBox()
+                        : FtAlbumCoverPage(music: currentSong),
+                  ),
+                ),
+              ),
+              const Spacer(),
+            ],
+          );
+        },
       ),
     );
   }
