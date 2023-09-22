@@ -1,4 +1,17 @@
 pipeline {
+  options {
+    disableResume()
+    disableConcurrentBuilds(abortPrevious: true)
+    timeout(time: 15, unit: 'MINUTES')
+    buildDiscarder(
+      logRotator(
+        numToKeepStr:'7',
+        daysToKeepStr: '1',
+        artifactDaysToKeepStr: '1',
+        artifactNumToKeepStr: '7'
+      )
+    )
+  }
   triggers {
     GenericTrigger(
       genericVariables: [
@@ -14,35 +27,55 @@ pipeline {
       causeString: ' Triggered on $branch' ,
     )
   }
-
+  environment {
+    PIPELINE_NAME = "chorus-media-player-docs-deploy"
+  }
   agent {
-    docker {
-      image 'registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/frontend-deploy:latest'
-      args '-v /etc/timezone:/etc/timezone:ro -v /etc/localtime:/etc/localtime:ro'
+    kubernetes {
+      yaml """
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        namespace: alomerry
+        labels:
+          service: jenkins-builder-${env.PIPELINE_NAME}
+      spec:
+        containers:
+        - name: chorus-media-player-docs-build
+          image: registry.cn-hangzhou.aliyuncs.com/alomerry/base-frontend:v20.5.1
+          imagePullPolicy: Always
+      """
+      retries 2
     }
   }
   stages {
-    stage('pull code') {
-      environment {
-        url = 'https://gitee.com/nocturnal-chorus/chorus-media-player.git'
-      }
+    stage('init') {
       steps {
-        retry(3) {
-          git(url: env.url, branch: 'develop')
+        sh"""
+        ([ -e .git ] && (git pull https://gitee.com/nocturnal-chorus/chorus-media-player.git develop)) || git clone -b develop https://gitee.com/nocturnal-chorus/chorus-media-player.git .
+        """
+        wrap([$class: 'BuildUser']) {
+          script {
+            def BUILD_REASON = sh(returnStdout: true, script: 'git show -s | grep -vE "commit|Date" | grep -v "^$"  | grep -v "Merge pull"')
+            def BUILD_TRIGGER_BY = 'admin'
+            if (env.BUILD_USER) {
+              BUILD_TRIGGER_BY = env.BUILD_USER
+            }
+            buildName "develop#${BUILD_NUMBER} / ${BUILD_TRIGGER_BY}"
+            buildDescription "${BUILD_REASON}"
+          }
         }
       }
     }
     stage('build') {
       steps {
-        sh 'cd docs && pnpm install && pnpm build'
-      }
-    }
-    stage('compress') {
-      steps {
-        sh '''
-        cd /var/jenkins_home/workspace/chorus-media-player-docs-deploy/docs/.vitepress/dist
-        tar -zcf chorus-media-player-docs.tar.gz *
-        '''
+        container('chorus-media-player-docs-build') {
+          sh '''
+          cd docs && pnpm install && pnpm build
+          cd .vitepress/dist
+          tar -zcf chorus-media-player-docs.tar.gz *
+          '''
+        }
       }
     }
     stage('ssh') {
@@ -62,7 +95,7 @@ pipeline {
             shopt -s extglob
             rm -rf !(.htaccess|.user.ini|.well-known|favicon.ico|chorus-media-player-docs.tar.gz)
             '''
-          sshPut remote: remote, from: '/var/jenkins_home/workspace/chorus-media-player-docs-deploy/docs/.vitepress/dist/chorus-media-player-docs.tar.gz', into: '/www/wwwroot/player-docs.nocturnal-chorus.com/'
+          sshPut remote: remote, from: 'docs/.vitepress/dist/chorus-media-player-docs.tar.gz', into: '/www/wwwroot/player-docs.nocturnal-chorus.com/'
           sshCommand remote: remote, command: "cd /www/wwwroot/player-docs.nocturnal-chorus.com/ && tar -xf chorus-media-player-docs.tar.gz"
           sshRemove remote: remote, path: '/www/wwwroot/player-docs.nocturnal-chorus.com/chorus-media-player-docs.tar.gz'
         }
@@ -70,17 +103,17 @@ pipeline {
     }
   }
 
-  environment {
-    barkDevice = credentials('bark-notification-device-alomerry')
-    cdnDomain = credentials('cdn-domain')
-    BUILD_NUMBER = "${env.BUILD_NUMBER}"
-  }
-  post {
-    success {
-      sh 'curl --globoff "https://bark.alomerry.com/$barkDevice/Player-docs%20build%20status%3A%20%5B%20Success%20%5D?icon=https%3A%2F%2F${cdnDomain}%2Fmedia%2Fimages%2Fjenkins.png&isArchive=0&group=jenkins&sound=electronic&level=passive"'
-    }
-    failure {
-      sh 'curl --globoff "https://bark.alomerry.com/$barkDevice/Player-docs%20build%20status%3A%20%5B%20Failed%20%5D?icon=https%3A%2F%2F${cdnDomain}%2Fmedia%2Fimages%2Fjenkins.png&url=https%3A%2F%2Fci.alomerry.com%2Fjob%2Fchorus-media-player-docs-deploy%2F${BUILD_NUMBER}%2Fconsole&isArchive=0&group=jenkins&sound=electronic"'
-    }
-  }
+  // environment {
+  //   barkDevice = credentials('bark-notification-device-alomerry')
+  //   cdnDomain = credentials('cdn-domain')
+  //   BUILD_NUMBER = "${env.BUILD_NUMBER}"
+  // }
+  // post {
+  //   success {
+  //     sh 'curl --globoff "https://bark.alomerry.com/$barkDevice/Player-docs%20build%20status%3A%20%5B%20Success%20%5D?icon=https%3A%2F%2F${cdnDomain}%2Fmedia%2Fimages%2Fjenkins.png&isArchive=0&group=jenkins&sound=electronic&level=passive"'
+  //   }
+  //   failure {
+  //     sh 'curl --globoff "https://bark.alomerry.com/$barkDevice/Player-docs%20build%20status%3A%20%5B%20Failed%20%5D?icon=https%3A%2F%2F${cdnDomain}%2Fmedia%2Fimages%2Fjenkins.png&url=https%3A%2F%2Fci.alomerry.com%2Fjob%2Fchorus-media-player-docs-deploy%2F${BUILD_NUMBER}%2Fconsole&isArchive=0&group=jenkins&sound=electronic"'
+  //   }
+  // }
 }
