@@ -94,6 +94,14 @@ class FtMainBloc extends FtBaseBloc {
     });
   }
 
+  bool isPlaying() {
+    if (_audioPlayer == null) {
+      return false;
+    } else {
+      return _audioPlayer!.playing;
+    }
+  }
+
   void play() {
     _audioPlayer?.play();
   }
