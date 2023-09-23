@@ -1,3 +1,4 @@
+// chorus-media-player-docs-deploy
 pipeline {
   options {
     disableResume()
@@ -27,9 +28,6 @@ pipeline {
       causeString: ' Triggered on $branch' ,
     )
   }
-  environment {
-    PIPELINE_NAME = "chorus-media-player-docs-deploy"
-  }
   agent {
     kubernetes {
       yaml """
@@ -38,7 +36,7 @@ pipeline {
       metadata:
         namespace: alomerry
         labels:
-          service: jenkins-builder-${env.PIPELINE_NAME}
+          service: jenkins-builder-chorus-media-player-docs-deploy
       spec:
         containers:
         - name: chorus-media-player-docs-build

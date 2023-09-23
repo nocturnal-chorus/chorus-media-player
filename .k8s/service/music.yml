@@ -35,7 +35,8 @@ spec:
     spec:
       containers:
         - name: player-music
-          image: registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-music:v1694640314029
+          image: registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-music:latest
+          imagePullPolicy: Always
           ports:
             - name: rpc
               containerPort: 8091

@@ -1,7 +1,29 @@
+// chorus-media-player-backend-build
+def Modules = ""
+def InitBuildService() {
+  def modules = sh(returnStdout: true, script: """
+    if [ ${COMMIT_BEFORE_SHA} != '' ]; then
+      echo \$(./backend/service/scripts/core/tools.sh \$(git diff --name-only ${COMMIT_BEFORE_SHA} ${COMMIT_AFTER_SHA}))
+    fi
+  """).trim()
+  Modules = modules
+}
 pipeline {
-  agent none
   parameters {
     choice(name: 'SERVICE', choices: ['all', 'music', 'member'], description: 'Which service need to build')
+  }
+  options {
+    disableResume()
+    disableConcurrentBuilds(abortPrevious: true)
+    timeout(time: 15, unit: 'MINUTES')
+    buildDiscarder(
+      logRotator(
+        numToKeepStr:'7',
+        daysToKeepStr: '1',
+        artifactDaysToKeepStr: '1',
+        artifactNumToKeepStr: '7'
+      )
+    )
   }
   triggers {
     GenericTrigger(
@@ -20,89 +42,138 @@ pipeline {
       causeString: ' Triggered on $branch' ,
     )
   }
-  environment {
-      Modules = "${SERVICE}"
+  agent {
+    kubernetes {
+      yaml """
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        namespace: alomerry
+        labels:
+          service: jenkins-builder-chorus-media-player-backend-service-build
+      spec:
+        containers:
+        - name: dind
+          image: docker:24.0.6-dind
+          tty: true
+          securityContext:
+            privileged: true
+          command:
+            - dockerd
+            - --host=tcp://0.0.0.0:8000
+            - --host=unix:///var/run/docker.sock
+            - --tls=false
+          volumeMounts:
+            - mountPath: /var/run
+              name: docker-sock
+          readinessProbe:
+            exec:
+              command: ["docker", "info"]
+            initialDelaySeconds: 10
+            failureThreshold: 6
+        - name: docker-builder
+          image: docker:24.0.6
+          tty: true
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/run
+              name: docker-sock
+        - name: tool-protoc
+          image: registry.cn-hangzhou.aliyuncs.com/alomerry/tool-protoc:v1
+          imagePullPolicy: Always
+        - name: base-golang
+          image: registry.cn-hangzhou.aliyuncs.com/alomerry/base-golang:1.21
+          imagePullPolicy: Always
+        volumes:
+          - name: docker-sock
+            emptyDir: {}
+      """
+    }
   }
   stages {
-    stage('pull code') {
-      agent any
-      environment {
-        url = 'https://gitee.com/nocturnal-chorus/chorus-media-player.git'
-      }
+    stage('init') {
       steps {
-        retry(3) {
-          git(url: env.url, branch: 'develop')
+        sh"""
+        ([ -e .git ] && (git pull https://gitee.com/nocturnal-chorus/chorus-media-player.git develop)) || git clone -b develop https://gitee.com/nocturnal-chorus/chorus-media-player.git .
+        """
+        wrap([$class: 'BuildUser']) {
+          script {
+            def BUILD_REASON = sh(returnStdout: true, script: 'git show -s | grep -vE "commit|Date" | grep -v "^$"  | grep -v "Merge pull"')
+            def BUILD_TRIGGER_BY = 'admin'
+            if (env.BUILD_USER) {
+              BUILD_TRIGGER_BY = env.BUILD_USER
+            }
+            buildName "develop#${BUILD_NUMBER} / ${BUILD_TRIGGER_BY}"
+            buildDescription "${BUILD_REASON}"
+          }
+        }
+      }
+    }
+    stage('valid changed') {
+      steps {
+        script {
+          Modules = params.SERVICE
+          try {
+            InitBuildService()
+          } catch (Exception e) {
+            if (Modules == "all" || Modules == "") {
+              Modules = "music"
+            }
+          }
         }
       }
     }
     // TODO cache
     stage('build proto') {
-      agent {
-        docker {
-          image 'registry.cn-hangzhou.aliyuncs.com/alomerry/tool-protoc:v1'
-        }
-      }
       steps {
-        sh '''
-        cd backend
-        ./build.sh proto
-        '''
-      }
-    }
-    stage('valid changed') {
-      agent any
-      steps {
-        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-          script {
-            def modules = sh(returnStdout: true, script: """
-              if [ ${COMMIT_BEFORE_SHA} != '' ]; then
-                echo \$(./backend/service/scripts/core/tools.sh \$(git diff --name-only ${COMMIT_BEFORE_SHA} ${COMMIT_AFTER_SHA}))
-              fi
-            """).trim()
-            Modules = modules
-          }
+        container('tool-protoc') {
+          sh '''
+          cd backend
+          ./build.sh proto
+          '''
         }
       }
     }
     stage('build service') {
-      agent {
-        docker {
-          image 'registry.cn-hangzhou.aliyuncs.com/alomerry/base-golang:1.21'
-        }
-      }
       steps {
-        sh "cd backend && ./build.sh service bin ${Modules}"
+        container('base-golang') {
+          sh "cd backend && ./build.sh service bin ${Modules}"
+        }
       }
     }
     stage('build docker') {
-      agent any
       environment {
         DOCKER_ACESS = credentials('docker-login')
+        VERSION = System.currentTimeMillis()
       }
       steps {
         script {
-          if (Modules == "all" || Modules == "") {
-            Modules = "music"
-          }
-          def services = Modules.split(' ');
-          def version = System.currentTimeMillis();
-          services.each{
-            sh """
-            cd backend
-            docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version --build-arg module=$it -f service/docker/Dockerfile .
-            """
-            sh 'echo ${DOCKER_ACESS_PSW} | docker login --username=${DOCKER_ACESS_USR} registry.cn-hangzhou.aliyuncs.com --password-stdin'
-            sh "docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-$it:v$version"
-            sh 'echo "y" | docker image prune'
-            build job: 'chorus-media-player-k8s-deploy', parameters: [
-              [$class: 'StringParameterValue', name: 'PROJECT', value: "backend"],
-              [$class: 'StringParameterValue', name: 'MODULES', value: it],
-              [$class: 'StringParameterValue', name: 'VERSION', value: "v"+version]
-            ], wait: false
-          }
+          sh(returnStdout: false, script: 'echo $DOCKER_ACESS_PSW > dockerCredentials')
         }
+        container('docker-builder') {
+          sh 'docker -v'
+          sh "cat dockerCredentials | docker login --username=docker.chorus@alomerry registry.cn-hangzhou.aliyuncs.com --password-stdin"
+          sh """
+          cd backend
+          services=${Modules}
+          IFS=" "; \
+          set -- \$services; \
+          echo "\$@"
+          for it in "\$@"; do \
+            docker build -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-\$it:v${env.VERSION} -t registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-\$it:latest --build-arg module=\$it -f service/docker/Dockerfile .; \
+            docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-\$it:v${env.VERSION}; \
+            docker push registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-\$it:latest; \
+          done
+          echo "y" | docker image prune
+          """
+        }
+        build job: 'chorus-media-player-k8s-deploy', parameters: [
+          [$class: 'StringParameterValue', name: 'PROJECT', value: "backend"],
+          [$class: 'StringParameterValue', name: 'MODULES', value: "${Modules}"],
+          [$class: 'StringParameterValue', name: 'VERSION', value: "v${env.VERSION}"]
+        ], wait: false
       }
     }
-    // TODO deploy to k8s
   }
 }

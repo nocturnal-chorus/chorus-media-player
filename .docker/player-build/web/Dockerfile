@@ -23,5 +23,3 @@ ENV PATH /root/flutter/bin:$PATH
 
 RUN flutter channel stable; \
     flutter config --enable-web;
-
-WORKDIR /var/jenkins_home/workspace

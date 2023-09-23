@@ -1,49 +1,95 @@
+// chorus-media-player-k8s-deploy
 pipeline {
-  agent any
+  options {
+    disableResume()
+    disableConcurrentBuilds(abortPrevious: false)
+    timeout(time: 15, unit: 'MINUTES')
+    buildDiscarder(
+      logRotator(
+        numToKeepStr:'7',
+        daysToKeepStr: '1',
+        artifactDaysToKeepStr: '1',
+        artifactNumToKeepStr: '7'
+      )
+    )
+  }
   parameters {
-    string(name: 'PROJECT', defaultValue: '', description: 'Which project need to deploy [backend, openapi]')
+    string(name: 'BRANCH', defaultValue: 'develop', description: 'Which branch need to deploy')
+    choice(name: 'PROJECT', choices: ['backend', 'openapi'], description: 'Which project need to deploy [backend, openapi]')
     string(name: 'MODULES', defaultValue: '', description: 'Which module need to deploy')
     string(name: 'VERSION', defaultValue: 'latest', description: 'Which version need to deploy')
   }
+  agent {
+    kubernetes {
+      yaml '''
+      apiVersion: v1
+      kind: Pod
+      metadata:
+        namespace: alomerry
+        labels:
+          service: jenkins-chorus-media-player-deploy
+      spec:
+        securityContext:
+          runAsUser: 1000
+        containers:
+        - name: kubectl
+          image: bitnami/kubectl:1.28.2
+          tty: true
+          command:
+            - cat
+      '''
+    }
+  }
   stages {
+    stage('init') {
+      steps {
+        // if (params.BRANCH != "develop") {
+        //   sh "git fetch --all && git checkout -b ${BRANCH} -f && git pull"
+        // }
+        sh '''
+        ([ -e .git ] && (git pull https://gitee.com/nocturnal-chorus/chorus-media-player.git develop)) || git clone -b develop https://gitee.com/nocturnal-chorus/chorus-media-player.git .
+        '''
+        wrap([$class: 'BuildUser']) {
+          script {
+            def BUILD_TRIGGER_BY = 'admin'
+            if (env.BUILD_USER) {
+              BUILD_TRIGGER_BY = env.BUILD_USER
+            }
+            buildName "${params.PROJECT}#${params.BRANCH} / ${BUILD_TRIGGER_BY}"
+          }
+        }
+      }
+    }
     stage('deploy service') {
-      // environment {
-      //   K8S_MASTER = credentials('k8s-master')
-      // }
       steps {
         script {
           if (params.PROJECT != "" && params.MODULES != "") {
-            def remote = [:]
-            remote.name = 'root'
-            remote.logLevel = 'WARNING'
-            remote.host = 'host.docker.internal'
-            remote.allowAnyHosts = true
-            withCredentials([usernamePassword(credentialsId: 'k8s-master', passwordVariable: 'password', usernameVariable: 'username')]) {
-              remote.user = "${username}"
-              remote.password = "${password}"
-            }
-
-            def (deployment, appName, imageId, registry) = ["", "", "", "registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus"];
-            def services = params.MODULES.split(' ');
-            if (services.size() > 0) {
-              services.each{
-                switch(params.PROJECT) {
-                  case "backend":
-                    deployment = "player-${it}-deployment"
-                    appName = "player-${it}"
-                    imageId = "player-backend-${it}"
-                    break
-                  case "openapi":
-                    deployment = "player-openapi-${it}-deployment"
-                    appName = "player-openapi-${it}"
-                    imageId = "player-openapi-${it}"
+            switch (params.PROJECT) {
+              case "backend":
+                if (params.modules != "") {
+                  def services = params.MODULES.split(' ');
+                  if (services.size() > 0) {
+                    container('kubectl') {
+                      sh "kubectl apply -f .k8s/ingress.yml"
+                    }
+                    services.each{
+                      container('kubectl') {
+                        sh "kubectl apply -f .k8s/service/${it}.yml"
+                      }
+                    }
+                  }
+                }
+                break
+              case "openapi":
+                switch (params.MODULES) {
+                  case "consumer":
+                    container('kubectl') {
+                      sh "kubectl apply -f .k8s/ingress.yml"
+                      sh "kubectl apply -f .k8s/openapi/consumer.yml"
+                    }
                     break
                 }
-                sshCommand remote: remote, command: """
-                  export KUBECONFIG=/etc/kubernetes/admin.conf
-                  kubectl set image -n nocturnal-chorus-player deployment/${deployment} ${appName}=${registry}/${imageId}:${VERSION}
-                """
-              }
+                break
             }
           }
         }
