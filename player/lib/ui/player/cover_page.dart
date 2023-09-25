@@ -254,7 +254,7 @@ class _AlbumCoverState extends State<FtAlbumCoverPage>
                     //所以对此计算旋转中心点的偏移,以保重旋转动画的中心在针尾圆形的中点
                     const Alignment(-1 + 44 * 2 / 273, -1 + 37 * 2 / 402),
                 child: Image.asset(
-                  'assets/images/playing_desktop_needle.png',
+                  'assets/images/playing_desktop_needle.webp',
                   height: kHeightSpaceAlbumTop * 1.8,
                 ),
               ),
