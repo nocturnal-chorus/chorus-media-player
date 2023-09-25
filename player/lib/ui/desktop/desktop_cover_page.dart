@@ -88,7 +88,7 @@ class _RotationCoverImageState extends State<FtRotationCoverImage>
     Widget image;
     if (widget.music == null || widget.music!.avatar == null) {
       image = Image.asset(
-        'assets/images/playing_desktop_disc.png',
+        'assets/images/playing_desktop_disc.webp',
         fit: BoxFit.cover,
       );
     } else {
@@ -116,7 +116,7 @@ class _RotationCoverImageState extends State<FtRotationCoverImage>
           child: Container(
             foregroundDecoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/playing_desktop_disc.png'),
+                image: AssetImage('assets/images/playing_desktop_disc.webp'),
               ),
             ),
             padding: const EdgeInsets.all(30),
