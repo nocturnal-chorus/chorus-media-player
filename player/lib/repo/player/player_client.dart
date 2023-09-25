@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:player/repo/entity/song_list.dart';
 import 'package:player/repo/player/player_api.dart';
 import 'package:player/repo/repo_client.dart';
 import '../../utils/all_utils.dart';
@@ -22,6 +23,13 @@ class PlayerClient implements DataClient {
 
   @override
   init() {}
+
+  @override
+  Future<CommonResponse<SongListResponse?>>? requestSongList() {
+    return _requestCall(() async {
+      return await _makeApi().requestSongList('application/json');
+    });
+  }
 
   PlayerApi _makeApi() => PlayerApi(_dio);
 

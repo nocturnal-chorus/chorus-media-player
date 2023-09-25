@@ -1,6 +1,7 @@
 import 'package:just_audio/just_audio.dart';
 import 'package:player/bloc/base_bloc.dart';
 import 'package:player/repo/entity/song_detail.dart';
+import 'package:player/repo/repo_client.dart';
 import 'package:player/ui/bottom_player_page.dart';
 import 'package:rxdart/rxdart.dart';
 import '../../bloc/bloc_provider.dart';
@@ -15,6 +16,7 @@ class FtMainBloc extends FtBaseBloc {
   final volumeStreamCtrl = BlocStreamController<double>();
   AudioPlayer? _audioPlayer;
   late ConcatenatingAudioSource _playlist;
+  final _client = DataClient();
 
   void initial() async {
     //TODO: desktop crash
@@ -42,6 +44,8 @@ class FtMainBloc extends FtBaseBloc {
     });
     _listenForChangesInSequenceState();
     _listenForChangesInVolume();
+    //获取播放列表
+    final response = await _client.requestSongList();
   }
 
   void _listenForChangesInPlayerState() {
