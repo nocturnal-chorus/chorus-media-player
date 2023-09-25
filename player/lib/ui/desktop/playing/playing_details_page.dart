@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:player/ui/desktop/playing/playing_operationbar_page.dart';
 import 'package:player/ui/player/cover_page.dart';
 import '../../../bloc/bloc_provider.dart';
 import '../../../main_bloc.dart';
@@ -45,6 +46,10 @@ class _DesktopPlayingDetailsPageState extends State<FtDesktopPlayingDetailsPage>
               child: _layoutCover(),
               flex: 5,
             ),
+            Flexible(
+              flex: 4,
+              child: Container(),
+            )
           ],
         ),
       ),
@@ -72,6 +77,8 @@ class _DesktopPlayingDetailsPageState extends State<FtDesktopPlayingDetailsPage>
                 ),
               ),
               const Spacer(),
+              FtPlayingOperationBarPage(),
+              const SizedBox(height: 60),
             ],
           );
         },
