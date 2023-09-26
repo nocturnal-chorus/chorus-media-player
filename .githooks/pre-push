@@ -7,7 +7,7 @@
 # exit 0
 
 local_branch=$(git rev-parse --abbrev-ref HEAD)
-remote_branch="origin/master"
+remote_branch="origin/$(git rev-parse --abbrev-ref HEAD)"
 
 # Fetch the latest changes from the remote repository
 git fetch

@@ -40,3 +40,25 @@ spec:
             - name: http
               containerPort: 4376
               protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: player-openapi-consumer-ingress
+  namespace: nocturnal-chorus-player
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-logging: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: player-openapi-consumer.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: player-openapi-consumer-service
+            port:
+              number: 4376
