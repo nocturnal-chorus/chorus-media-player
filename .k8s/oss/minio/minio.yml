@@ -1,0 +1,156 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-pv
+spec:
+  capacity:
+    storage: 35Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /root/apps/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - node2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+  namespace: minio
+spec:
+  storageClassName: local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 35Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-deployment
+  namespace: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      volumes:
+      - name: minio-pv
+        persistentVolumeClaim:
+          claimName: minio-pvc
+      containers:
+      - name: minio
+        image: quay.io/minio/minio:latest
+        volumeMounts:
+        - name: minio-pv
+          mountPath: /data
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - minio server /data --console-address :9090
+        env:
+        - name: MINIO_ROOT_USER
+          value: ""
+        - name: MINIO_ROOT_PASSWORD
+          value: ""
+        - name: MINIO_SERVER_URL
+          value: "https://oss.nocturnal-chorus.com"
+        - name: MINIO_BROWSER_REDIRECT_URL
+          value: "https://oss.alomerry.com"
+        # https://min.io/docs/minio/linux/integrations/setup-nginx-proxy-with-minio.html
+        ports:
+          - name: api
+            containerPort: 9000
+          - name: console
+            containerPort: 9090
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: minio-service
+  namespace: minio
+  labels:
+    app: minio
+  annotations:
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: api
+      protocol: TCP
+      port: 9000
+      targetPort: api
+    - name: console
+      protocol: TCP
+      port: 9090
+      targetPort: console
+  selector:
+    app: minio
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  namespace: minio
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/enable-logging: "true"
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   more_set_headers "Host: oss.xxx.com";
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: oss.nocturnal-chorus.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9000
+  - host: oss.alomerry.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9090
