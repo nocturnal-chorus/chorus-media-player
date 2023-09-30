@@ -38,16 +38,21 @@ spec:
           image: registry.cn-hangzhou.aliyuncs.com/nocturnal-chorus/player-backend-music:latest
           imagePullPolicy: Always
           env:
-          - name: OSS_AK_KEY
+          - name: OSS_ENDPOINT
             valueFrom:
-            secretKeyRef:
-              name: minio-secret
-              key: ak
-          - name: OSS_SK_KEY
+              secretKeyRef:
+                name: minio-secret
+                key: endpoint
+          - name: OSS_AK
             valueFrom:
-            secretKeyRef:
-              name: minio-secret
-              key: sk
+              secretKeyRef:
+                name: minio-secret
+                key: ak
+          - name: OSS_SK
+            valueFrom:
+              secretKeyRef:
+                name: minio-secret
+                key: sk
           ports:
             - name: rpc
               containerPort: 8091

@@ -26,7 +26,7 @@ pipeline {
       printPostContent: false,
       tokenCredentialId: 'webhook-trigger-token',
       regexpFilterText: '$name@$branch@$changed_files',
-      regexpFilterExpression: 'chorus-media-player@refs/heads/develop@.*\\"backend/.*',
+      regexpFilterExpression: 'chorus-media-player@refs/heads/develop@.*\\"backend/(proto|service).*',
       causeString: ' Triggered on $branch' ,
     )
   }

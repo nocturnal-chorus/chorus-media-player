@@ -2,6 +2,8 @@ package oss
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/minio/minio-go/v7"
 	"github.com/nocturnal-chorus/chorus-media-player/core/utils"
 )
@@ -46,8 +48,12 @@ var (
 )
 
 func MinioClient() *minio.Client {
+	var err error
 	if minioClient == nil {
-		minioClient, _ = InitMinioClient(utils.GetOssAK(), utils.GetOssSK())
+		minioClient, err = InitMinioClient("2lAse4PBRscdknzAo2gS", "1L2bPBQVfnVIS3i4UcpfYTTFMYcIP1rgVPFviyUI")
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 	return minioClient
 }

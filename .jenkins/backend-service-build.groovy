@@ -38,7 +38,7 @@ pipeline {
       printPostContent: false,
       tokenCredentialId: 'webhook-trigger-token',
       regexpFilterText: '$name@$branch@$changed_files',
-      regexpFilterExpression: 'chorus-media-player@refs/heads/develop@.*\\"backend/.*',
+      regexpFilterExpression: 'chorus-media-player@refs/heads/develop@.*\\"backend/(proto|service).*',
       causeString: ' Triggered on $branch' ,
     )
   }
@@ -113,13 +113,13 @@ pipeline {
     stage('valid changed') {
       steps {
         script {
-          Modules = params.SERVICE
           try {
             InitBuildService()
           } catch (Exception e) {
-            if (Modules == "all" || Modules == "") {
-              Modules = "music"
-            }
+            // empty
+          }
+          if (params.SERVICE == "all" || Modules == "") {
+            Modules = "music"
           }
         }
       }

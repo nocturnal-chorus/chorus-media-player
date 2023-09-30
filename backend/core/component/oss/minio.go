@@ -3,10 +3,11 @@ package oss
 import (
 	"context"
 	"errors"
+
+	"github.com/nocturnal-chorus/chorus-media-player/core/utils"
+
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
-	"github.com/nocturnal-chorus/chorus-media-player/core/utils"
-	"strings"
 )
 
 // 后续禁止导出
@@ -23,15 +24,10 @@ func InitMinioClient(accessKeyId, accessKeySecret string) (*minio.Client, error)
 	if endpoint == "" || accessKeyId == "" || accessKeySecret == "" {
 		return nil, errors.New("empty key")
 	}
-	secure := true
-	if secure {
-		endpoint = strings.Replace(endpoint, "https://", "", 1)
-	} else {
-		endpoint = strings.Replace(endpoint, "http://", "", 1)
-	}
-	client, err := minio.New(strings.Replace(endpoint, "%s.", "", -1), &minio.Options{
+
+	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyId, accessKeySecret, ""),
-		Secure: secure,
+		Secure: true,
 	})
 	if err != nil {
 		return nil, err

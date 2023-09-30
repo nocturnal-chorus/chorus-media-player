@@ -74,7 +74,10 @@ pipeline {
                     }
                     services.each{
                       container('kubectl') {
-                        sh "kubectl apply -f .k8s/service/${it}.yml"
+                        sh """
+                        sed -i 's/player-backend-${it}:latest/player-backend-${it}:${params.VERSION}/' .k8s/service/${it}.yml
+                        kubectl apply -f .k8s/service/${it}.yml
+                        """
                       }
                     }
                   }
@@ -84,8 +87,11 @@ pipeline {
                 switch (params.MODULES) {
                   case "consumer":
                     container('kubectl') {
-                      sh "kubectl apply -f .k8s/ingress.yml"
-                      sh "kubectl apply -f .k8s/openapi/consumer.yml"
+                      sh """
+                      kubectl apply -f .k8s/ingress.yml
+                      sed -i 's/player-openapi-consumer:latest/player-openapi-consumer:${params.VERSION}/' .k8s/openapi/consumer.yml
+                      kubectl apply -f .k8s/openapi/consumer.yml
+                      """
                     }
                     break
                 }
