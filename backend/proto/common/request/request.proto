@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package player.common;
+
+option go_package = ".;common";
+
+message ListCondition {
+  // 页码
+  uint32 page = 1;
+  // 每页数据数目
+  uint32 perPage = 2;
+  // 排序字段
+  //
+  // 按字段排序, 例如 ["createdAt", "-createdAt"]
+  repeated string orderBy = 3;
+}

@@ -8,3 +8,15 @@ import (
 func GetDateBaseDSN() string {
 	return os.Getenv(extension.PlayerDbDsnKey)
 }
+
+func GetOssEndPoint() string {
+	return os.Getenv(extension.OssEndPointKey)
+}
+
+func GetOssAK() string {
+	return os.Getenv(extension.OssAKKey)
+}
+
+func GetOssSK() string {
+	return os.Getenv(extension.OssSKKey)
+}

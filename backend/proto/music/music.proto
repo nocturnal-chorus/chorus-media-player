@@ -5,12 +5,24 @@ package player.music;
 option go_package = ".;music";
 
 message ListMusicRequest {
-
+  string searchKeyword = 1;
 }
 
 message ListMusicResponse {
   repeated MusicItem items = 1;
   uint32 total = 2;
+}
+
+// TODO add validate
+message GetMusicRequest {
+  string id = 1;
+  string name = 2; // TODO remove
+}
+
+message MusicDetail {
+  string id = 1;
+  string name = 2;
+  string url = 3;
 }
 
 message MusicItem {

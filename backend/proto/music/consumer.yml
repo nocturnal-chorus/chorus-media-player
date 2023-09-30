@@ -6,3 +6,5 @@ http:
     - selector: player.music.MusicService.ListMusic
       body: "*"
       post: "/v0/music"
+    - selector: player.music.MusicService.GetMusic
+      get: "/v0/music"
