@@ -2,3 +2,4 @@
 **/*.pb.gw.go
 gatewayLoader.go
 generate_gateway_loader
+consumer.yml

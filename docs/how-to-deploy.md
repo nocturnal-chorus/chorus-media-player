@@ -9,11 +9,23 @@
 - protoc-gen-go
 - protoc-gen-go-grpc
 
-## Reference
+### Reference
 
 - https://grpc.io/docs/protoc-installation/
 - https://grpc.io/docs/languages/go/quickstart/
 - https://github.com/grpc-ecosystem/grpc-gateway/releases
+
+## minio
+
+TODO
+
+## MySQL
+
+TODO
+
+## ElasticSearch
+
+TODO
 
 ## 客户端
 
