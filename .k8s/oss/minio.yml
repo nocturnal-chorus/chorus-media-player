@@ -1,0 +1,162 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: minio-local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-pv
+spec:
+  capacity:
+    storage: 35Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: minio-local-storage
+  local:
+    path: /root/apps/minio
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+            - node2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+  namespace: nocturnal-chorus-player
+spec:
+  storageClassName: minio-local-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 35Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio-deployment
+  namespace: nocturnal-chorus-player
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      volumes:
+      - name: minio-pv
+        persistentVolumeClaim:
+          claimName: minio-pvc
+      containers:
+      - name: minio
+        image: quay.io/minio/minio:latest
+        volumeMounts:
+        - name: minio-pv
+          mountPath: /data
+        command:
+        - /bin/bash
+        - -c
+        args:
+        - minio server /data --console-address :9090
+        env:
+        - name: MINIO_ROOT_USER
+          value: "alomerry"
+        - name: MINIO_ROOT_PASSWORD
+          value: ""
+        - name: MINIO_SERVER_URL
+          value: ""
+        - name: MINIO_BROWSER_REDIRECT_URL
+          value: "https://minio.nocturnal-chorus.com/console/"
+        # https://min.io/docs/minio/linux/integrations/setup-nginx-proxy-with-minio.html
+        ports:
+          - name: api
+            containerPort: 9000
+          - name: console
+            containerPort: 9090
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /minio/health/live
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: minio-service
+  namespace: nocturnal-chorus-player
+  labels:
+    app: minio
+  annotations:
+    kubesphere.io/creator: admin
+spec:
+  ports:
+    - name: api
+      protocol: TCP
+      port: 9000
+      targetPort: api
+    - name: console
+      protocol: TCP
+      port: 9090
+      targetPort: console
+  selector:
+    app: minio
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minio-ingress
+  namespace: nocturnal-chorus-player
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/enable-logging: "true"
+    # nginx.ingress.kubernetes.io/server-snippet:
+    # nginx.ingress.kubernetes.io/configuration-snippet: |
+    #   rewrite ^/minio/ui/(.*) /$1 break;
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: minio.nocturnal-chorus.com
+    http:
+      paths:
+      - path: /console(/|$)(.*)
+        pathType: Exact
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9090
+      - path: /()(.*)
+        pathType: Exact
+        backend:
+          service:
+            name: minio-service
+            port:
+              number: 9000
