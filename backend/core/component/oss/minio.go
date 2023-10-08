@@ -10,6 +10,8 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+// https://min.io/docs/minio/linux/developers/go/API.html
+
 // 后续禁止导出
 type MinioOss struct {
 	minioClient *minio.Client

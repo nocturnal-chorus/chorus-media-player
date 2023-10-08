@@ -19,6 +19,12 @@
 
 TODO
 
+### Reference
+
+- https://www.zhihu.com/question/463899128/answer/3223969777
+- https://min.io/docs/minio/linux/operations/network-encryption.html
+- https://min.io/docs/minio/linux/integrations/setup-nginx-proxy-with-minio.html
+
 ## MySQL
 
 TODO
